@@ -1,0 +1,4 @@
+interface:
+  display_name: "实景拼贴 · Gathered Scenes"
+  short_description: "真实摄影为锚，以大众美感、和谐留白和克制拼贴重组场景"
+  default_prompt: "Use $scenes-gathered-zine to turn this photo into a broadly appealing editorial paper poster with truthful photography, at least 25% designed quiet paper, restrained source-derived collage, and a subtle vintage paper tone outside the photographic subject."
