@@ -1,6 +1,54 @@
 # Codex Skills
 
-个人 Codex Skills 集合。当前版本新增 `refine-photos`（摄影精修），用于以确定性、非生成式方式处理人像、风光及人景结合照片。
+个人 Codex Skills 集合，覆盖方案追问、Java 开发规范、规划模式、摄影精修与纸海报创作等场景。仓库同时包含 `.system/` 系统级技能，供 Codex 自身调用。
+
+## 技能总览
+
+### 用户级技能
+
+| Skill | 功能 | 适用场景 |
+|---|---|---|
+| `grilling` | 对计划、决策或想法进行连续追问访谈，一次一个问题并附推荐答案 | 方案压力测试、设计澄清 |
+| `grill-me` | `grilling` 的快捷别名 | 直接以 `/grilling` 方式追问 |
+| `grill-with-docs` | `grilling` 的快捷别名，额外产出 ADR 与术语表文档 | 需要边访谈边沉淀文档 |
+| `java-dev` | 基于阿里 Java 开发手册（嵩山版）的 Java 开发规范 | Java 编码、评审、重构、数据库与 API 设计、单元测试、并发与安全 |
+| `plan-mode` | Claude Code Plan Mode 架构的完整复刻（增强版） | 复杂任务的深度规划，强制代码落地与显式暂停询问 |
+| `refine-photos` | 确定性、非生成式的摄影精修 | 人像、风光、环境人像的调色、局部精修与瑕疵修复 |
+| `scene-distillation-zine` | 将照片转化为插画风纸海报（不保留照片像素） | 编辑性视觉再诠释 |
+| `scenes-gathered-zine` | 将照片转化为编辑风纸海报（以摄影真实为主导） | 美观易读的纸海报创作 |
+
+### 系统级技能（`.system/`）
+
+| Skill | 功能 |
+|---|---|
+| `imagegen` | 图像生成与编辑 |
+| `openai-docs` | OpenAI 文档与 Codex 相关知识查询 |
+| `plugin-creator` | 创建和脚手架化 Codex 插件目录 |
+| `review-agent` | 对代码变更进行只读、缺陷优先的审查 |
+| `skill-creator` | 创建或更新 Skill 的指南 |
+| `skill-installer` | 从精选列表或 GitHub 仓库安装 Skill |
+
+## 安装
+
+将任一 Skill 目录复制到 Codex 个人技能目录即可：
+
+```powershell
+Copy-Item -LiteralPath .\<skill> -Destination "$env:USERPROFILE\.codex\skills\<skill>" -Recurse
+```
+
+随后在新的对话轮次中通过技能名或斜杠命令调用，例如 `使用 $refine-photos ...` 或 `/grilling`。
+
+## 方案追问
+
+`grilling` 会对一个计划、决策或想法进行穷追不舍的访谈：一次只问一个问题并等待反馈，每个问题附带推荐答案；可通过环境查证的事实会自行查证，只把真正的决策交还用户，并在达成共识前不采取行动。`grill-me` 与 `grill-with-docs` 是它的快捷别名，后者会额外产出 ADR 与术语表文档。
+
+## Java 开发规范
+
+`java-dev` 基于阿里 Java 开发手册（嵩山版），覆盖命名规范、编码规范、并发编程、异常与日志、数据库设计、安全实现、单元测试与架构设计，内置 8 份分主题参考文档，用于编写、评审和重构 Java 代码。
+
+## 规划模式
+
+`plan-mode` 完整复刻 Claude Code Plan Mode 架构：只读模式下产出包含具体代码实现的详细计划，计划文件必须包含核心函数签名、逻辑伪代码与约 80% 骨架代码；遇到需求歧义或技术选型分歧时强制暂停并向用户提问；退出前通过计划质量闸门清单。内置 9 份参考文档与 6 个质量检查/搜索脚本。
 
 ## 摄影精修
 
@@ -60,18 +108,38 @@ python -m unittest discover -s .\refine-photos\tests -p "test_*.py" -v
 
 当前自动化测试共 9 项，覆盖 Recipe 白名单、固定数组边界、创意光效授权、黑白风格冲突、构图保留率、JPEG 渲染、ICC 往返、16 位 TIFF 以及确定性源像素瑕疵修复。
 
+## 影像蒸馏
+
+`scene-distillation-zine` 将用户提供的照片转化为独立成画的插画风纸海报，最终画面不保留任何照片像素；强调第一眼的普适美感、清晰的主角和协调的构图色彩，同时保留一处来自源图的安静张力。支持「单色块模式」触发词。输出为生成图像、简短中文创作说明与美术指导说明。
+
+## 实景拼贴
+
+`scenes-gathered-zine` 将照片转化为编辑风纸海报，以摄影真实作为主导的事实与情感锚点，默认至少 25% 的设计留白纸面；用户要求杂志、编辑或作者性排版时，切换为更不对称的编辑版式。输出为生成图像与简短中文创作说明。
+
 ## 版本
 
-当前版本：`v1.0.0`（2026-08-11）。详细内容见 [版本变更记录](CHANGELOG.md)。
+当前版本：`v1.1.0`（2026-08-11）。详细内容见 [版本变更记录](CHANGELOG.md)。
 
 ## 项目结构
 
 ```text
-refine-photos/
+grilling/                    方案追问
+grill-me/                    方案追问别名
+grill-with-docs/             方案追问别名（含文档产出）
+java-dev/                    阿里 Java 开发规范
+plan-mode/                   Claude Code Plan Mode 复刻
+refine-photos/               确定性摄影精修
+scene-distillation-zine/     影像蒸馏纸海报
+scenes-gathered-zine/        实景拼贴纸海报
+.system/                     系统级技能
+```
+
+每个 Skill 目录遵循统一结构：
+
+```text
+<skill>/
 ├── SKILL.md
 ├── agents/openai.yaml
 ├── references/
-├── schemas/recipe.schema.json
-├── scripts/
-└── tests/
+└── (scripts/、schemas/、tests/ 按需)
 ```
