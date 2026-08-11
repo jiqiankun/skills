@@ -2,6 +2,16 @@
 
 本项目采用语义化版本号记录可交付版本。
 
+## [1.2.0] - 2026-08-11
+
+### 移除
+
+- 移除 `.system/` 系统级技能目录（`imagegen`、`openai-docs`、`plugin-creator`、`review-agent`、`skill-creator`、`skill-installer`）。
+
+### 变更
+
+- README 移除系统级技能相关内容，技能总览与项目结构同步更新。
+
 ## [1.1.0] - 2026-08-11
 
 ### 移除

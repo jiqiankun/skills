@@ -1,10 +1,8 @@
 # Codex Skills
 
-个人 Codex Skills 集合，覆盖方案追问、Java 开发规范、规划模式、摄影精修与纸海报创作等场景。仓库同时包含 `.system/` 系统级技能，供 Codex 自身调用。
+个人 Codex Skills 集合，覆盖方案追问、Java 开发规范、规划模式、摄影精修与纸海报创作等场景。
 
 ## 技能总览
-
-### 用户级技能
 
 | Skill | 功能 | 适用场景 |
 |---|---|---|
@@ -16,17 +14,6 @@
 | `refine-photos` | 确定性、非生成式的摄影精修 | 人像、风光、环境人像的调色、局部精修与瑕疵修复 |
 | `scene-distillation-zine` | 将照片转化为插画风纸海报（不保留照片像素） | 编辑性视觉再诠释 |
 | `scenes-gathered-zine` | 将照片转化为编辑风纸海报（以摄影真实为主导） | 美观易读的纸海报创作 |
-
-### 系统级技能（`.system/`）
-
-| Skill | 功能 |
-|---|---|
-| `imagegen` | 图像生成与编辑 |
-| `openai-docs` | OpenAI 文档与 Codex 相关知识查询 |
-| `plugin-creator` | 创建和脚手架化 Codex 插件目录 |
-| `review-agent` | 对代码变更进行只读、缺陷优先的审查 |
-| `skill-creator` | 创建或更新 Skill 的指南 |
-| `skill-installer` | 从精选列表或 GitHub 仓库安装 Skill |
 
 ## 安装
 
@@ -118,7 +105,7 @@ python -m unittest discover -s .\refine-photos\tests -p "test_*.py" -v
 
 ## 版本
 
-当前版本：`v1.1.0`（2026-08-11）。详细内容见 [版本变更记录](CHANGELOG.md)。
+当前版本：`v1.2.0`（2026-08-11）。详细内容见 [版本变更记录](CHANGELOG.md)。
 
 ## 项目结构
 
@@ -131,7 +118,6 @@ plan-mode/                   Claude Code Plan Mode 复刻
 refine-photos/               确定性摄影精修
 scene-distillation-zine/     影像蒸馏纸海报
 scenes-gathered-zine/        实景拼贴纸海报
-.system/                     系统级技能
 ```
 
 每个 Skill 目录遵循统一结构：
