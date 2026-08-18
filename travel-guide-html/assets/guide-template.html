@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>交互式旅行攻略 · 模板</title>
+<!-- 单文件模板：直接填充 OVERVIEW/PREP/DAYS/STAY/SOUVENIRS 即可，无地图、无需坐标。所有 CSS/JS 内联，移动优先、可离线打开。 -->
+<style>
+  :root{
+    --bg:#f6f9fc; --card:#fff; --ink:#0a2540; --muted:#697386; --line:#e6ebf1;
+    --scenic:#11b3a3; --food:#ff6b6b; --culture:#8b7cf6; --transit:#9aa5b1; --route:#3b82f6;
+    --easy:#2bbf7a; --mid:#f5a623; --hard:#ef5b5b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:15px}
+
+  /* Banner — 移动优先：徽章居中堆叠于标题下方 */
+  .banner{position:relative;overflow:hidden;background:linear-gradient(120deg,#0a2540,#1a3a6b 60%,#11b3a3);padding:26px 16px 20px;color:#fff;text-align:center}
+  .banner::before{content:"";position:absolute;top:-60px;right:-40px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%)}
+  .banner h1{font-size:21px;letter-spacing:.3px;position:relative;text-align:center;line-height:1.35}
+  .banner .sub{opacity:.85;margin-top:6px;font-size:13px;position:relative;text-align:center}
+  .badges{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:8px 14px;text-align:center;backdrop-filter:blur(4px)}
+  .badge b{display:block;font-size:18px} .badge small{font-size:11px;opacity:.85}
+  @media(min-width:760px){
+    .banner{padding:34px 280px 30px 280px}
+    .banner h1{font-size:30px;letter-spacing:.5px}
+    .badges{position:absolute;top:50%;right:24px;transform:translateY(-50%);margin-top:0;z-index:2}
+  }
+
+  /* 导航 — 移动优先：横向滚动，吸顶 */
+  .nav{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:0;z-index:20}
+  .nav::before,.nav::after{content:"";margin:auto}
+  .nav::-webkit-scrollbar{display:none}
+  .nav button{border:none;background:var(--bg);color:var(--muted);padding:9px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s;white-space:nowrap;flex:0 0 auto}
+  .nav button.active{background:var(--ink);color:#fff}
+
+  /* 布局 — 移动优先：单栏居中，无地图 */
+  .layout{max-width:920px;margin:0 auto;padding:14px}
+  @media(min-width:680px){ .layout{padding:20px} }
+
+  /* 每日 Dashboard 信息条 */
+  .dash{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;justify-content:center}
+  .dash .chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px}
+  .dash .chip b{color:var(--muted);font-weight:600;margin-right:5px}
+  .lv-easy{color:var(--easy);border-color:var(--easy)} .lv-mid{color:var(--mid);border-color:var(--mid)} .lv-hard{color:var(--hard);border-color:var(--hard)}
+
+  /* 时间轴卡片 */
+  .timeline{position:relative;padding-left:22px}
+  .timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:12px;position:relative;box-shadow:0 1px 3px rgba(10,37,64,.05)}
+  .dot{position:absolute;left:-19px;top:16px;width:12px;height:12px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
+  .dot.scenic{background:var(--scenic)} .dot.food{background:var(--food)} .dot.culture{background:var(--culture)} .dot.transit{background:var(--transit)}
+  .card .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card .time{font-weight:700;font-size:14px}
+  .pill{font-size:11px;padding:2px 9px;border-radius:20px;color:#fff;font-weight:600}
+  .pill.scenic{background:var(--scenic)} .pill.food{background:var(--food)} .pill.culture{background:var(--culture)} .pill.transit{background:var(--transit)}
+  .card h3{font-size:15px;margin:2px 0;margin-left:auto}
+  .card .desc{color:var(--muted);font-size:13px;margin:5px 0}
+  .card .meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+  .card .meta span b{color:var(--ink)}
+  .move{font-size:12px;background:#eef3fb;color:#2b4a7a;border-radius:8px;padding:4px 9px;display:inline-block;margin-top:8px}
+  .tip{font-size:12px;color:#b06a00;background:#fff7e6;border-radius:8px;padding:4px 9px;display:inline-block;margin-top:6px}
+  .toggle{margin-top:10px;color:var(--route);font-size:13px;font-weight:600;cursor:pointer;user-select:none;display:inline-block}
+  .detail{overflow:hidden;max-height:0;transition:max-height .3s ease;border-top:1px dashed var(--line);margin-top:10px}
+  .detail.open{max-height:3200px}
+  .detail .grid{display:grid;grid-template-columns:1fr;gap:8px;padding:12px 0;font-size:13px}
+  @media(min-width:560px){ .detail .grid{grid-template-columns:1fr 1fr} }
+  .detail .grid div b{color:var(--muted);display:block;font-size:11px;font-weight:600}
+  .internal{background:#f0fdfa;border-radius:10px;padding:10px;margin-top:8px;font-size:12px}
+  .internal div{margin:4px 0} .pri-high{color:var(--hard);font-weight:700} .pri-mid{color:var(--mid)} .pri-low{color:var(--muted)}
+  .recs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .rec{font-size:11px;padding:3px 9px;border-radius:8px;background:#eef3fb;color:#2b4a7a}
+  .rec.warn{background:#fdecec;color:#b03434}
+
+  /* 区块 / 总览 / 准备清单 */
+  .sec{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .sec h2{font-size:17px;margin-bottom:8px;text-align:center}
+  .budget-bar{height:10px;border-radius:6px;background:linear-gradient(90deg,var(--scenic),var(--culture),var(--route));margin:8px 0}
+  .lead{font-size:12.5px;color:var(--muted);line-height:1.7}
+  .ov-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
+  @media(min-width:560px){ .ov-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))} }
+  .ov-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .ov-card h4{font-size:14px;margin-bottom:6px}
+  .foot{padding:20px 14px;text-align:center;color:var(--muted);font-size:12px}
+  details{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:#fafcff}
+  details summary{cursor:pointer;font-weight:600;font-size:13px}
+  details p{margin-top:6px}
+
+  /* 住宿行 / 特产网格 */
+  .stay-line{margin-top:10px;background:#f3f8ff;border:1px solid #d8e6fb;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.6}
+  .stay-line b{color:var(--ink)}
+  .stay-why{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+  .souv-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
+  @media(min-width:560px){ .souv-grid{grid-template-columns:1fr 1fr} }
+  .souv-type{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;background:var(--food);color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+  <header class="banner">
+    <h1 id="bTitle">XX → YY · N 日攻略</h1>
+    <div class="sub" id="bSub">出行日期 · 人数</div>
+    <div class="badges" id="badges"></div>
+  </header>
+
+  <nav class="nav" id="nav"></nav>
+
+  <main class="layout" id="layout">
+    <div id="main"></div>
+  </main>
+
+  <div class="foot">单文件交互式攻略 · 手机可直接打开浏览，离线可用</div>
+
+<script>
+/* ============ 1. 数据（按需替换，无地图、无需坐标） ============ */
+const OVERVIEW = {
+  route: "南京 → 成都 → 九寨沟/黄龙 → 成都 → 南京",
+  dailyCore: [
+    { day:"DAY 1", title:"抵蓉", highlights:"武侯祠 · 锦里 · 九眼桥" },
+    { day:"DAY 2", title:"进山", highlights:"动车+直通车 · 黄龙" }
+  ],
+  budget:{ total:"≈ ¥9,800（2人）", breakdown:[
+    {item:"机票",amount:"¥3,600"},{item:"动车+直通车",amount:"¥760"},
+    {item:"住宿",amount:"¥2,400"},{item:"门票+车+索道",amount:"¥1,740"},
+    {item:"餐饮",amount:"¥1,200"},{item:"市内交通",amount:"¥100"} ] },
+  transport:[
+    {mode:"✈️ 飞机",detail:"南京⇄成都 往返 ¥1,800/人"},
+    {mode:"🚄 动车",detail:"成都东⇄黄龙九寨站 约2h ¥143"},
+    {mode:"🚌 直通车",detail:"黄龙九寨站⇄沟口 约1h"} ],
+  intensity:[ {day:"DAY 1",level:"适中"},{day:"DAY 2",level:"较累"} ],
+  bookings:[ {item:"机票",lead:"提前1–2个月"},{item:"动车票",lead:"提前3–10天"} ]
+};
+
+const PREP = { groups:[
+  {cat:"机票",items:[{name:"南京⇄成都 往返",lead:"提前1–2个月"}]},
+  {cat:"高铁票",items:[{name:"成都东→黄龙九寨站",lead:"提前3–10天"}]},
+  {cat:"酒店",items:[{name:"成都2晚/沟口1–2晚",lead:"提前2–4周"}]},
+  {cat:"景区门票",items:[{name:"九寨沟/黄龙",lead:"提前1–3天"}]},
+  {cat:"观光车/索道",items:[{name:"九寨观光车/黄龙索道",lead:"购票时选"}]},
+  {cat:"演出",items:[{name:"藏羌晚会(可选)",lead:"现场/携程"}]}
+]};
+
+const DAYS = [
+  { day:"DAY 1", icon:"🏮", date:"10/27 周二", title:"抵蓉 · 武侯祠与锦里", summary:"落地成都，武侯祠追三国，锦里尝小吃。",
+    weather:"18–24°C 多云", clothing:"薄外套+步行鞋", budget:"≈ ¥2,100（2人）",
+    intensity:"适中", walk:"≈1.2万步", transportTime:"主交通≈1.5h", maxAlt:"500m",
+    highlights:"武侯祠 · 锦里 · 九眼桥",
+    stay:"推荐住宿区(如市中心/景区附近)", stayWhy:"住宿理由：结合次日景点地理位置，减少交通往返",
+    pois:[
+      { t:"14:00", cat:"culture", name:"武侯祠",
+        desc:"三国圣地，君臣合祀。", tip:"红墙竹影很出片。",
+        move:"🚇 地铁至高升桥站步行10min",
+        stay:"2h", best:"14:00–16:00 人少光柔", booking:"公众号/美团购票", avoid:"正午逆光",
+        nearby:"大门外公厕、锦里餐饮", ticket:"¥50", order:"大门→汉昭烈庙→武侯祠→惠陵",
+        mustsee:"红墙夹道、诸葛亮殿", photo:"红墙竹影",
+        nearbyRecs:[{name:"锦里",tag:"顺路推荐"},{name:"耍都",tag:"有时间再去"}] },
+      { t:"16:30", cat:"food", name:"锦里小吃",
+        desc:"川西小吃街。", tip:"现做现吃。",
+        move:"🚶 武侯祠出大门即到",
+        rtype:"小吃街", avg:"¥40/人", dishes:"三大炮/糖油果子/牛肉焦饼",
+        order2:"2人每样半份轮换尝", spice:"🌶🌶 中辣", queue:"傍晚高峰排队", worth:"顺路吃即可",
+        nearbyRecs:[{name:"莲花府邸酒吧",tag:"有时间再去"}] }
+    ],
+    spare:{ complete:"武侯祠→锦里→九眼桥", easy:"只武侯祠+锦里", rainy:"武侯祠室内+锦里廊棚", short:"只武侯祠" }
+  }
+  // ... 继续补充 DAY 2..N
+];
+
+/* ============ 2. 渲染 ============ */
+/* 住宿推荐（可选；按城市给出区域范围+价格+理由；day.stay 引用其中区域） */
+const STAY = {
+  summary:"全程以「市中心/景区附近」为大本营，减少每日交通往返；高原/山区日可按需加住一晚。",
+  areas:[
+    {area:"市中心·核心区", price:"¥300–600/晚", reason:"步行/地铁可达多数景点，吃饭逛街集中", fit:"多数日大本营"},
+    {area:"景区附近(可选)", price:"¥400–800/晚", reason:"看完返程直接回酒店、免深夜奔波", fit:"深度游某景区时可选"} ]
+};
+
+/* 伴手礼 / 特产（可选；给出购买地址与推荐理由） */
+const SOUVENIRS = [
+  { name:"特产A", type:"类别", where:"购买地址(商场/老店/超市)", price:"¥参考价", reason:"推荐理由：好带、代表性、性价比" },
+  { name:"特产B", type:"类别", where:"购买地址", price:"¥参考价", reason:"推荐理由" }
+];
+
+const CATNAME={scenic:"景点",food:"美食",culture:"文化",transit:"交通"};
+const $=(s,r=document)=>r.querySelector(s);
+let curPage="总览", curDay=0;
+
+function renderBadges(){
+  const poi=DAYS.reduce((a,d)=>a+d.pois.length,0);
+  $("#badges").innerHTML=`<div class="badge"><b>${DAYS.length}</b><small>天数</small></div>
+    <div class="badge"><b>${poi}</b><small>POI 数</small></div>
+    <div class="badge"><b>${OVERVIEW.budget.total.replace(/（.*/,'')}</b><small>总预算</small></div>`;
+}
+function renderNav(){
+  const ICONS={总览:"🧭",特产:"🎁",准备清单:"✅"};
+  const tabs=["总览",...DAYS.map(d=>d.day),"特产","准备清单"];
+  $("#nav").innerHTML=tabs.map(t=>{const d=DAYS.find(x=>x.day===t);const ic=ICONS[t]||(d&&d.icon)||"🗓";return `<button data-t="${t}" class="${t===curPage?'active':''}">${ic} ${t}</button>`;}).join("");
+  $("#nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{curPage=b.dataset.t; if(DAYS.find(d=>d.day===curPage))curDay=DAYS.findIndex(d=>d.day===curPage); renderNav(); renderPage();});
+  const ab=$("#nav .active"); if(ab) ab.scrollIntoView({block:"nearest",inline:"center"});
+}
+function lvClass(l){return l==="轻松"?"lv-easy":l==="较累"?"lv-hard":"lv-mid";}
+function poiCard(p,i){
+  const d=p.cat==="food"?`
+    <div class="detail" id="d-${curDay}-${i}">
+      <div class="grid">
+        <div><b>人均</b>${p.avg||''}</div><div><b>类型</b>${p.rtype||''}</div>
+        <div><b>推荐菜</b>${p.dishes||''}</div><div><b>2人点法</b>${p.order2||''}</div>
+        <div><b>辣度</b>${p.spice||''}</div><div><b>排队</b>${p.queue||''}</div>
+        <div style="grid-column:1/3"><b>值得</b>${p.worth||''}</div>
+        <div style="grid-column:1/3"><b>附近</b>${(p.nearbyRecs||[]).map(r=>`<span class="rec ${r.tag.includes('不')?'warn':''}">${r.name}·${r.tag}</span>`).join("")}</div>
+      </div></div>`
+   :`<div class="detail" id="d-${curDay}-${i}"><div class="grid">
+        <div><b>停留</b>${p.stay||''}</div><div><b>最佳</b>${p.best||''}</div>
+        <div><b>门票</b>${p.ticket||''}</div><div><b>预约</b>${p.booking||''}</div>
+        <div style="grid-column:1/3"><b>顺序</b>${p.order||''}</div>
+        <div style="grid-column:1/3"><b>必看</b>${p.mustsee||''}</div>
+        <div style="grid-column:1/3"><b>拍照</b>${p.photo||''}</div>
+        <div style="grid-column:1/3"><b>避坑</b>${p.avoid||''}</div>
+        <div style="grid-column:1/3"><b>便民</b>${p.nearby||''}</div>
+        ${(p.internal||[]).length?`<div style="grid-column:1/3" class="internal">${p.internal.map(s=>`<div class="pri-${s.priority}">${s.mode} ${s.text}</div>`).join("")}</div>`:""}
+        <div style="grid-column:1/3"><b>附近</b>${(p.nearbyRecs||[]).map(r=>`<span class="rec ${r.tag.includes('不')?'warn':''}">${r.name}·${r.tag}</span>`).join("")}</div>
+      </div></div>`;
+  return `<div class="card" data-day="${curDay}" data-i="${i}">
+    <span class="dot ${p.cat}"></span>
+    <div class="top"><span class="time">${p.t}</span><span class="pill ${p.cat}">${CATNAME[p.cat]}</span><h3 style="margin-left:auto">${p.name}</h3></div>
+    <div class="desc">${p.desc||''}</div>
+    ${p.move?`<span class="move">🚦 ${p.move}</span>`:""}
+    <div class="meta"><span><b>停留</b>${p.stay||''}</span><span><b>门票</b>${p.ticket||''}</span></div>
+    ${p.tip?`<span class="tip">💡 ${p.tip}</span>`:""}
+    <div class="toggle" onclick="toggleDetail(event,${curDay},${i})">▾ 展开攻略</div>${d}
+  </div>`;
+}
+function toggleDetail(e,day,i){ e.stopPropagation(); const el=$(`#d-${day}-${i}`); el.classList.toggle("open"); e.target.textContent=el.classList.contains("open")?"▴ 收起攻略":"▾ 展开攻略"; }
+function renderDay(d){
+  const dash=`<div class="dash">
+    <div class="chip"><b>🌤</b>${d.weather}</div><div class="chip"><b>🧥</b>${d.clothing}</div>
+    <div class="chip"><b>💰</b>${d.budget}</div><div class="chip ${lvClass(d.intensity)}"><b>强度</b>${d.intensity}</div>
+    <div class="chip"><b>🚶</b>${d.walk}</div><div class="chip"><b>⏱</b>${d.transportTime}</div>
+    ${d.maxAlt?`<div class="chip"><b>⛰</b>${d.maxAlt}</div>`:""}<div class="chip"><b>✨</b>${d.highlights}</div></div>`;
+  $("#main").innerHTML=`<div class="sec"><h2>${d.day} · ${d.title} <small style="color:var(--muted);font-weight:400">${d.date}</small></h2>
+    <p class="lead">${d.summary}</p>
+    <div class="stay-line">🏨 今晚住宿：<b>${d.stay}</b><span class="stay-why">${d.stayWhy}</span></div></div>${dash}
+    <div class="timeline">${d.pois.map((p,i)=>poiCard(p,i)).join("")}</div>
+    <div class="sec"><h2>备用方案</h2>
+      <details><summary>推荐完整路线</summary><p class="lead">${d.spare.complete}</p></details>
+      <details><summary>轻松版</summary><p class="lead">${d.spare.easy}</p></details>
+      <details><summary>雨天备用</summary><p class="lead">${d.spare.rainy}</p></details>
+      <details><summary>时间不足精简</summary><p class="lead">${d.spare.short}</p></details></div>`;
+}
+function renderOverview(){
+  $("#main").innerHTML=`<div class="sec"><h2>整体路线</h2><p>${OVERVIEW.route}</p></div>
+    <div class="sec"><h2>每日核心</h2><div class="ov-grid">${OVERVIEW.dailyCore.map(d=>`<div class="ov-card"><h4>${d.day} ${d.title}</h4><p class="lead">${d.highlights}</p></div>`).join("")}</div></div>
+    <div class="sec"><h2>总预算 ${OVERVIEW.budget.total}</h2><div class="budget-bar"></div>${OVERVIEW.budget.breakdown.map(b=>`<div class="lead">${b.item}：${b.amount}</div>`).join("")}</div>
+    <div class="sec"><h2>交通结构</h2>${OVERVIEW.transport.map(t=>`<div class="lead">${t.mode} ${t.detail}</div>`).join("")}</div>
+    <div class="sec"><h2>住宿推荐</h2><p class="lead">${STAY.summary}</p><div class="ov-grid" style="margin-top:12px">${STAY.areas.map(a=>`<div class="ov-card"><h4>${a.area}</h4><p class="lead">💰 ${a.price}</p><p class="lead">${a.reason}</p><p class="lead"><b>适合</b> ${a.fit}</p></div>`).join("")}</div></div>
+    <div class="sec"><h2>行程强度</h2>${OVERVIEW.intensity.map(x=>`<span class="chip ${lvClass(x.level)}">${x.day} · ${x.level}</span>`).join(" ")}</div>
+    <div class="sec"><h2>重要预约</h2>${OVERVIEW.bookings.map(b=>`<div class="lead">${b.item}：提前 ${b.lead}</div>`).join("")}</div>`;
+}
+function renderPrep(){
+  $("#main").innerHTML=`<div class="sec"><h2>准备清单</h2>${PREP.groups.map(g=>`<div class="ov-card" style="margin-top:10px"><h4>${g.cat}</h4>${g.items.map(it=>`<div class="lead">· ${it.name} <b>（提前 ${it.lead}）</b></div>`).join("")}</div>`).join("")}</div>`;
+}
+function renderSouvenirs(){
+  $("#main").innerHTML=`<div class="sec"><h2>伴手礼 · 特产清单</h2><p class="lead">建议集中在老字号/大超市一次购齐；真空/干货/米面可带上飞机，液体注意托运。</p></div>
+   <div class="souv-grid">${SOUVENIRS.map(s=>`<div class="ov-card">
+     <div style="display:flex;gap:8px;align-items:center"><span class="souv-type">${s.type}</span><h4 style="margin:0">${s.name}</h4></div>
+     <p class="lead" style="margin-top:8px"><b>参考价</b> ${s.price}</p>
+     <p class="lead"><b>📍 购买</b> ${s.where}</p>
+     <p class="lead" style="color:#b06a00"><b>💡 推荐理由</b> ${s.reason}</p>
+   </div>`).join("")}</div>`;
+}
+function renderPage(){
+  if(curPage==="总览")renderOverview();
+  else if(curPage==="准备清单")renderPrep();
+  else if(curPage==="特产")renderSouvenirs();
+  else renderDay(DAYS.find(d=>d.day===curPage));
+}
+
+/* ============ 3. 启动（本模板无地图模块） ============ */
+$("#bTitle").textContent=OVERVIEW.route.split(" → ").slice(0,2).join(" → ")+" · "+DAYS.length+" 日攻略";
+renderBadges(); renderNav(); renderPage();
+</script>
+</body>
+</html>
