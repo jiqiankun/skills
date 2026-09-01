@@ -2,6 +2,21 @@
 
 本项目采用语义化版本号记录可交付版本。
 
+## [1.6.0] - 2026-09-01
+
+### 新增（travel-guide-html：轻量拍照打卡能力）
+
+- Skill 新增「📷 拍照打卡信息（Photo Info）」章节：Photography is supplementary travel information；确立 **Travel-first** 默认模式（完整旅游规划 → 锁定行程 → 按地点补充拍照信息）与 photography-focused 专项模式（仅当用户明确提出摄影需求时启用）。
+- 数据模型新增 POI 可选字段 `photo_info{spots[]{location, subjects[], tip}, best_time, schedule_note}`：1–2 个机位 + 一句手机拍法，全部字段可选；旧 `photo` 一行摘要字段保留兼容、自动回退。
+- **微调边界规则（核心）**：摄影推荐允许反向微调行程时间，但一次微调必须同时满足——偏移 ≤30 分钟、不增删/更换景点、不改景点顺序、不影响交通衔接、用餐住宿不动、不要求提前起床或深夜滞留；任一不满足即为过度调整，退回「顺手拍」写法。
+- HTML 模板新增地点卡内 `.photo-info` 轻量组件（暖橙浅底小框、机位 + 主题胶囊标签 + 一句拍法 + 参考时间 + 当前计划说明），视觉权重低于景点介绍；美食卡（景观餐厅「顺手拍」）同样支持；不设「今日必拍 / 摄影时间轴 / 摄影路线」等日级独立摄影模块。
+- 新增 `examples/wuyuan-2day.html` 完整示例（婺源 2 日：李坑/篁岭/月亮湾/江湾，含无需调整与 ≤30 分钟可选微调两类 schedule_note 写法）。
+
+### 变更
+
+- `references/data-model.md`、`references/layout-spec.md` 同步 photo_info schema 与组件规范（含 `--photo` 专属暖橙变量）。
+- SKILL.md 工作流新增 Step 1.5（行程锁定后补充拍照信息）；Step 3 校验项增加 photo_info 计数与微调幅度抽查（不得出现 >30 分钟的时间改写）。
+
 ## [1.4.0] - 2026-08-18
 
 ### 移除

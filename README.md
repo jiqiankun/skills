@@ -44,6 +44,8 @@ Copy-Item -LiteralPath .\<skill> -Destination "$env:USERPROFILE\.codex\skills\<s
 
 `travel-guide-html` 将一次多日旅行的行程规划渲染为**单个可直接双击打开、手机可顺畅浏览的 HTML 文件**：攻略内容为主体，不内置任何地图模块，无需坐标依赖。包含每日时间轴、每日 Dashboard、可展开的景点攻略、住宿推荐（含地理理由）、伴手礼/特产清单（含购买地址与理由）、备用方案、附近顺路推荐、美食增强、总览页与准备清单页。单一文件、零外部依赖，所有 CSS / JS / 数据内联，离线可用；视觉沿用 Stripe 风（浅色底 + 柔光渐变），移动优先响应式设计。
 
+行程完整规划并锁定后，值得拍的地点（古村古镇、山水观景台、景观餐厅等）会补充轻量「📷 拍照打卡」信息：1–2 个机位、一句手机拍法、参考时间与当前计划说明。Travel experience always takes priority over photography——摄影推荐可对行程做 ≤30 分钟的可选微调（不动景点/顺序/餐住/交通衔接），禁止过度调整，也不设任何独立的日级摄影模块。
+
 ### 使用方式
 
 将 Skill 安装到 Codex 个人目录：
@@ -62,7 +64,7 @@ Copy-Item -LiteralPath .\travel-guide-html -Destination "$env:USERPROFILE\.codex
 
 ## 版本
 
-当前版本：`v1.4.0`（2026-08-18）。详细内容见 [版本变更记录](CHANGELOG.md)。
+当前版本：`v1.6.0`（2026-09-01）。详细内容见 [版本变更记录](CHANGELOG.md)。
 
 ## 项目结构
 
