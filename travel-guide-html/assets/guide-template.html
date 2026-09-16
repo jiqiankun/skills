@@ -2,333 +2,254 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>交互式旅行攻略 · 模板</title>
-<!-- 单文件模板：直接填充 OVERVIEW/PREP/DAYS/STAY/SOUVENIRS 即可，无地图、无需坐标。所有 CSS/JS 内联，移动优先、可离线打开。
-     拍照打卡：行程锁定后，仅在值得拍的地点上挂可选 photo_info{spots[]{location,subjects,tip}, best_time, schedule_note}，
-     作为地点卡展开区内的轻量附属信息；不设日级摄影模块。schedule_note 可给 ≤30 分钟的可选微调，禁止过度调整（不动景点/顺序/餐住/交通衔接）。 -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{旅行标题}}</title>
+<!-- 填充全部占位符；按实际天数复制每日区块及导航，删除不适用内容。正文不依赖脚本。 -->
 <style>
-  :root{
-    --bg:#f6f9fc; --card:#fff; --ink:#0a2540; --muted:#697386; --line:#e6ebf1;
-    --scenic:#11b3a3; --food:#ff6b6b; --culture:#8b7cf6; --transit:#9aa5b1; --route:#3b82f6;
-    --photo:#e8590c;
-    --easy:#2bbf7a; --mid:#f5a623; --hard:#ef5b5b;
+  /* 基础与视觉 */
+  :root {
+    --bg: #f6f8fc; --card: #fff; --ink: #132d48; --muted: #526477;
+    --line: #dce4ed; --accent: #3654bb; --soft: #edf2ff;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{-webkit-text-size-adjust:100%}
-  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:15px}
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; overflow-wrap: anywhere; }
+  h1, h2, h3, h4, p, dl { margin: 0; }
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.3; letter-spacing: -.035em; }
+  h2 { font-size: 1.4rem; line-height: 1.45; }
+  h3 { font-size: 1.1rem; line-height: 1.5; }
+  h4 { font-size: 1rem; }
+  p + p, p + ul, p + ol { margin-top: 8px; }
+  ul, ol { padding-left: 1.4em; }
+  li + li { margin-top: 6px; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  [hidden] { display: none !important; }
+  .muted, .small { color: var(--muted); }
+  .small { font-size: .875rem; }
+  .banner { padding: 32px 20px; background: radial-gradient(ellipse at 85% 0, #e0f2f0, transparent 60%), linear-gradient(115deg, #edf3ff, #f3efff 65%, #edf8f5); border-bottom: 1px solid var(--line); }
+  .banner-inner { max-width: 1040px; margin: auto; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: center; }
+  .eyebrow { margin-bottom: 10px; color: var(--accent); font-size: .875rem; font-weight: 700; letter-spacing: .12em; }
+  .trip-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; color: var(--muted); font-size: .875rem; }
+  .hero-note { padding: 18px 20px; border: 1px solid #d5dfee; border-radius: 16px; background: rgb(255 255 255 / 65%); }
+  .hero-note strong { display: block; margin-bottom: 8px; }
+  .hero-note p + p { margin-top: 10px; }
+  @media (min-width: 800px) { .banner { padding: 48px 24px; } .hero-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 40px; } }
+  .cover { margin: 20px 0 0; }
+  .cover img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: var(--soft); }
+  .cover figcaption { margin-top: 6px; color: var(--muted); font-size: .875rem; }
+  .skip-link { position: absolute; top: 8px; left: 8px; z-index: 30; padding: 10px; background: white; transform: translateY(-180%); }
+  .skip-link:focus { transform: none; }
 
-  /* Banner — 移动优先：徽章居中堆叠于标题下方 */
-  .banner{position:relative;overflow:hidden;background:linear-gradient(120deg,#0a2540,#1a3a6b 60%,#11b3a3);padding:26px 16px 20px;color:#fff;text-align:center}
-  .banner::before{content:"";position:absolute;top:-60px;right:-40px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%)}
-  .banner h1{font-size:21px;letter-spacing:.3px;position:relative;text-align:center;line-height:1.35}
-  .banner .sub{opacity:.85;margin-top:6px;font-size:13px;position:relative;text-align:center}
-  .badges{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
-  .badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:8px 14px;text-align:center;backdrop-filter:blur(4px)}
-  .badge b{display:block;font-size:18px} .badge small{font-size:11px;opacity:.85}
-  @media(min-width:760px){
-    .banner{padding:34px 280px 30px 280px}
-    .banner h1{font-size:30px;letter-spacing:.5px}
-    .badges{position:absolute;top:50%;right:24px;transform:translateY(-50%);margin-top:0;z-index:2}
-  }
+  /* 导航与响应式布局 */
+  .nav { position: sticky; top: 0; z-index: 20; display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto; background: var(--card); border-bottom: 1px solid var(--line); box-shadow: 0 3px 12px rgb(10 37 64 / 3%); }
+  .nav::before, .nav::after { content: ""; margin: auto; }
+  .nav a { display: flex; align-items: center; flex: 0 0 auto; min-height: 44px; padding: 8px 14px; border-radius: 24px; text-decoration: none; white-space: nowrap; font-size: .9375rem; }
+  .nav a[aria-current="page"] { background: var(--accent); color: #fff; }
+  .layout { max-width: 1080px; margin: auto; padding: 24px 16px; }
+  [data-page], [id] { scroll-margin-top: 5.5rem; }
+  [data-page] { margin-bottom: 24px; }
+  .page-head { margin-bottom: 20px; }
+  .page-head p { margin-top: 8px; }
+  .card { min-width: 0; padding: 18px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); box-shadow: 0 6px 18px rgb(10 37 64 / 3%); }
+  .card > h3, .card > h4 { margin-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .grid > * { min-width: 0; }
+  .grid .card { margin: 0; }
+  .full { grid-column: 1 / -1; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .day-link { display: block; min-height: 44px; padding: 8px 0; font-weight: 650; text-decoration: none; }
+  .day-link:hover { text-decoration: underline; }
+  .note { padding: 12px; margin: 12px 0; border-left: 3px solid var(--accent); border-radius: 4px; background: var(--soft); }
+  .dashboard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+  .dashboard > div { min-width: 0; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  dt { color: var(--muted); font-size: .875rem; }
+  dd { margin: 2px 0 0; font-weight: 600; }
+  @media (min-width: 800px) { .dashboard { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
-  /* 导航 — 移动优先：横向滚动，吸顶 */
-  .nav{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:0;z-index:20}
-  .nav::before,.nav::after{content:"";margin:auto}
-  .nav::-webkit-scrollbar{display:none}
-  .nav button{border:none;background:var(--bg);color:var(--muted);padding:9px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s;white-space:nowrap;flex:0 0 auto}
-  .nav button.active{background:var(--ink);color:#fff}
-
-  /* 布局 — 移动优先：单栏居中，无地图 */
-  .layout{max-width:920px;margin:0 auto;padding:14px}
-  @media(min-width:680px){ .layout{padding:20px} }
-
-  /* 每日 Dashboard 信息条 */
-  .dash{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;justify-content:center}
-  .dash .chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px}
-  .dash .chip b{color:var(--muted);font-weight:600;margin-right:5px}
-  .lv-easy{color:var(--easy);border-color:var(--easy)} .lv-mid{color:var(--mid);border-color:var(--mid)} .lv-hard{color:var(--hard);border-color:var(--hard)}
-
-  /* 时间轴卡片 */
-  .timeline{position:relative;padding-left:22px}
-  .timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:12px;position:relative;box-shadow:0 1px 3px rgba(10,37,64,.05)}
-  .dot{position:absolute;left:-19px;top:16px;width:12px;height:12px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
-  .dot.scenic{background:var(--scenic)} .dot.food{background:var(--food)} .dot.culture{background:var(--culture)} .dot.transit{background:var(--transit)}
-  .card .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .card .time{font-weight:700;font-size:14px}
-  .pill{font-size:11px;padding:2px 9px;border-radius:20px;color:#fff;font-weight:600}
-  .pill.scenic{background:var(--scenic)} .pill.food{background:var(--food)} .pill.culture{background:var(--culture)} .pill.transit{background:var(--transit)}
-  .card h3{font-size:15px;margin:2px 0;margin-left:auto}
-  .card .desc{color:var(--muted);font-size:13px;margin:5px 0}
-  .card .meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
-  .card .meta span b{color:var(--ink)}
-  .move{font-size:12px;background:#eef3fb;color:#2b4a7a;border-radius:8px;padding:4px 9px;display:inline-block;margin-top:8px}
-  .tip{font-size:12px;color:#b06a00;background:#fff7e6;border-radius:8px;padding:4px 9px;display:inline-block;margin-top:6px}
-  .toggle{margin-top:10px;color:var(--route);font-size:13px;font-weight:600;cursor:pointer;user-select:none;display:inline-block}
-  .detail{overflow:hidden;max-height:0;transition:max-height .3s ease;border-top:1px dashed var(--line);margin-top:10px}
-  .detail.open{max-height:6000px}
-  .detail .grid{display:grid;grid-template-columns:1fr;gap:8px;padding:12px 0;font-size:13px}
-  @media(min-width:560px){ .detail .grid{grid-template-columns:1fr 1fr} }
-  .detail .grid div b{color:var(--muted);display:block;font-size:11px;font-weight:600}
-  .internal{background:#f0fdfa;border-radius:10px;padding:10px;margin-top:8px;font-size:12px}
-  .internal div{margin:4px 0} .pri-high{color:var(--hard);font-weight:700} .pri-mid{color:var(--mid)} .pri-low{color:var(--muted)}
-  .recs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-  .rec{font-size:11px;padding:3px 9px;border-radius:8px;background:#eef3fb;color:#2b4a7a}
-  .rec.warn{background:#fdecec;color:#b03434}
-
-  /* 区块 / 总览 / 准备清单 */
-  .sec{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
-  .sec h2{font-size:17px;margin-bottom:8px;text-align:center}
-  .budget-bar{height:10px;border-radius:6px;background:linear-gradient(90deg,var(--scenic),var(--culture),var(--route));margin:8px 0}
-  .lead{font-size:12.5px;color:var(--muted);line-height:1.7}
-  .ov-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
-  @media(min-width:560px){ .ov-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))} }
-  .ov-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
-  .ov-card h4{font-size:14px;margin-bottom:6px}
-  .foot{padding:20px 14px;text-align:center;color:var(--muted);font-size:12px}
-  details{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:#fafcff}
-  details summary{cursor:pointer;font-weight:600;font-size:13px}
-  details p{margin-top:6px}
-
-  /* 住宿行 / 特产网格 */
-  .stay-line{margin-top:10px;background:#f3f8ff;border:1px solid #d8e6fb;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.6}
-  .stay-line b{color:var(--ink)}
-  .stay-why{display:block;color:var(--muted);font-size:12px;margin-top:4px}
-  .souv-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
-  @media(min-width:560px){ .souv-grid{grid-template-columns:1fr 1fr} }
-  .souv-type{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;background:var(--food);color:#fff;font-weight:600}
-
-  /* 📷 拍照打卡（地点卡展开区内的轻量附属模块；无日级摄影模块） */
-  .photo-info{grid-column:1/3;background:#fffaf5;border:1px solid #ffe8d1;border-radius:10px;padding:9px 11px;margin-top:4px;font-size:12.5px}
-  .photo-info .pi-title{font-weight:700;font-size:12px;color:#b45309;margin-bottom:5px}
-  .pi-spot{margin-top:6px;line-height:1.6;color:#33475b}
-  .pi-spot:first-of-type{margin-top:2px}
-  .pi-spot b{color:var(--ink)}
-  .ps-tags{display:inline-flex;flex-wrap:wrap;gap:4px;margin:0 2px}
-  .ps-tag{font-size:10.5px;padding:1px 7px;border-radius:20px;background:#fff0e3;color:#c14a0c;font-weight:600;white-space:nowrap}
-  .pi-best{font-size:11.5px;color:var(--muted);margin-top:6px}
-  .pi-note{font-size:11.5px;color:#b45309;margin-top:3px}
+  /* 时间轴与原生折叠 */
+  .timeline { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--line); }
+  .timeline > li { margin: 0; position: relative; }
+  .timeline > li::before { content: ""; position: absolute; top: 23px; left: -20px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+  .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; font-size: .875rem; }
+  .meta > span:first-child { font-weight: 700; color: var(--accent); }
+  .tag { padding: 2px 9px; border-radius: 20px; background: #eef2f6; color: #48586a; }
+  .tag.scenic { background: #e6f6f2; color: #096956; }
+  .tag.food { background: #fff0ed; color: #9c3a2a; }
+  .tag.culture { background: #f1edff; color: #5c419c; }
+  .move { margin-top: 8px; color: var(--muted); font-size: .875rem; }
+  details { margin-top: 12px; border-top: 1px solid var(--line); }
+  summary { min-height: 44px; padding: 10px 4px; cursor: pointer; color: var(--accent); font-weight: 600; }
+  .detail-body { padding: 4px 0 8px; }
+  .detail-body h4 { margin-bottom: 4px; }
+  .foot { max-width: 1080px; padding: 16px; margin: auto; color: var(--muted); font-size: .875rem; }
 </style>
 </head>
 <body>
-  <header class="banner">
-    <h1 id="bTitle">XX → YY · N 日攻略</h1>
-    <div class="sub" id="bSub">出行日期 · 人数</div>
-    <div class="badges" id="badges"></div>
-  </header>
+<a class="skip-link" href="#main">跳到攻略正文</a>
+<header class="banner">
+  <div class="banner-inner hero-grid">
+    <div>
+      <p class="eyebrow">旅行计划</p>
+      <h1>{{旅行标题}}</h1>
+      <div class="trip-meta"><span>{{日期或适用季节}}</span><span>{{天数}}</span><span>{{人数或计价口径}}</span></div>
+    </div>
+    <aside class="hero-note" aria-label="旅行摘要">
+      <strong>这趟旅行的重点</strong>
+      <p>{{最值得体验的内容与整体节奏}}</p>
+      <p class="small">{{关键偏好与必要假设}}</p>
+    </aside>
+  </div>
+</header>
+<nav class="nav" aria-label="攻略导航">
+  <a href="#overview">总览</a>
+  <a href="#day-1">Day 1</a>
+  <a href="#souvenirs">特产</a>
+  <a href="#prep">准备清单</a>
+</nav>
+<main id="main" class="layout" tabindex="-1">
+  <section id="overview" data-page aria-labelledby="overview-title">
+    <header class="page-head"><p class="eyebrow">先看全程</p><h2 id="overview-title" tabindex="-1">行程总览</h2><p>{{整体路线与住宿夜数}}</p></header>
+    <section class="card"><h3>为什么这样安排</h3><p>{{按地理顺序、开放条件与同行偏好说明路线逻辑和取舍}}</p>
+      <!-- 有合适的真实目的地图片时可添加 cover 图文区：HTTPS 地址、替代文字、固定比例及来源说明。 -->
+    </section>
+    <div class="card">
+      <h3>每日核心</h3>
+      <a class="day-link" href="#day-1">Day 1 · {{当日主题}}</a>
+      <p class="small">{{核心安排与强度；从最终每日计划提取}}</p>
+    </div>
+    <div class="grid">
+      <section class="card"><h3>往返与衔接</h3><p>{{已确认交通或建议时间窗、站点与首尾安排}}</p></section>
+      <section class="card"><h3>费用参考</h3><p>{{总额或范围、口径与主要分项}}</p><p class="small">{{未包含项目与可选费用}}</p></section>
+      <!-- 无住宿需求时删除此区块；候选区域仅在存在实际取舍时追加。 -->
+      <section class="card full">
+        <h3>住在哪一带</h3><p><strong>{{首选区域及适用夜晚}}</strong> · {{每间每晚价格范围}}</p>
+        <p>{{与前日终点、次日首站和返程节点的关系；早餐、夜宵、交通与行李取舍}}</p>
+        <p class="small">{{有意义的备选区域及选择条件；不适用则删除本段}}</p>
+      </section>
+    </div>
+    <div class="note"><strong>优先确认：</strong>{{关键预约、截止时间与尚待确认的影响}}</div>
+    <section id="sources" class="card">
+      <h3>信息核验</h3>
+      <p class="small">{{关键结论、来源名称、核验日期与状态；有可靠网址时添加普通链接}}</p>
+      <p class="small">来源链接提供核验依据，出发前请复核会影响行程的动态信息。</p>
+    </section>
+  </section>
 
-  <nav class="nav" id="nav"></nav>
+  <!-- 按实际天数复制本区块，将 day-1 和 day-1-title 改为唯一 ID，同步导航和总览入口。 -->
+  <section id="day-1" data-page aria-labelledby="day-1-title">
+    <header class="page-head"><p class="eyebrow">每日安排</p><h2 id="day-1-title" tabindex="-1">Day 1 · {{当日主题}}</h2><p>{{日期与连续游览链}}</p><p class="muted">{{这一天的核心体验及游玩节奏}}</p></header>
+    <div class="card">
+      <dl class="dashboard">
+        <div><dt>出发 → 结束</dt><dd>{{建议出发时间}} → {{建议结束时间}}</dd></div>
+        <div><dt>核心景点</dt><dd>{{排除餐厅和交通节点后的数量}}</dd></div>
+        <div><dt>步行与强度</dt><dd>{{步行范围、坡度／台阶及强度}}</dd></div>
+        <div><dt>主要交通</dt><dd>{{方式与门到门总耗时范围}}</dd></div>
+        <div><dt>当日花费</dt><dd>{{预算或主要支出及口径}}</dd></div>
+        <div><dt>天气与穿衣</dt><dd>{{预报或季节参考、核验日期与衣着建议}}</dd></div>
+      </dl>
+      <p class="note"><strong>今日提醒：</strong>{{预约、最晚离开等真正影响执行的事项}}</p>
+      <p>{{当晚住宿及衔接；返程日改为取行李与去站点安排}}</p>
+    </div>
 
-  <main class="layout" id="layout">
-    <div id="main"></div>
-  </main>
+    <ol class="timeline" aria-label="当日时间轴">
+      <!-- 交通、休息和入住节点保持简短，无需景点详情。 -->
+      <li><article class="card">
+        <div class="meta"><span>{{出发或到达时间}}</span><span class="tag">交通</span></div>
+        <h3>{{站点或接驳节点}}</h3><p>{{出站、取行李、寄存或接车安排与缓冲}}</p>
+      </article></li>
+      <li><article class="card">
+        <div class="meta"><span>{{游览开始—结束}}</span><span class="tag scenic">景点</span></div>
+        <h3>{{核心景点名称}}</h3><p>{{为什么值得去、核心体验与停留时长}}</p>
+        <p class="move">{{前站 → 本站入口：交通方式、步行换乘与总耗时}}</p>
+        <p class="note">{{门票与单位、关键预约／开放限制、核验状态；无关键提醒则删除本段}}</p>
+        <details>
+          <summary>展开景点攻略</summary>
+          <div class="detail-body grid">
+            <div><h4>游览顺序</h4><p>{{入口 → 主要看点 → 出口；大型景区补内部接驳和步行}}</p></div>
+            <div><h4>看什么、怎么看</h4><p>{{核心看点、值得了解的背景和容易错过的细节}}</p></div>
+            <div><h4>到达与取舍</h4><p>{{最佳到达时段及原因、时间不足可跳过的内容}}</p></div>
+            <div><h4>实用提醒</h4><p>{{适用的避坑、休息、厕所、寄存与无障碍信息}}</p></div>
+            <!-- 附近项不适用时删除；摄影有需求时在此处添加次级段落。 -->
+            <div class="full"><h4>有余裕再去 · 可选</h4><p>{{真正顺路的地点、插入位置、往返加游览耗时，以及接回主线的方法}}</p></div>
+          </div>
+        </details>
+        <p class="move">{{从哪个出口离开、下一站怎么走及最晚离开时间（适用时）}}</p>
+      </article></li>
+      <!-- 按时间插入早餐、午餐、晚餐与休息；小吃和夜宵按需追加。 -->
+      <li><article class="card">
+        <div class="meta"><span>{{用餐开始—结束}}</span><span class="tag food">正餐</span></div>
+        <h3>{{餐次与顺路区域或已核验店铺}}</h3><p>{{当地特色、推荐菜、人均区间与口味适配}}</p>
+        <p class="move">{{从上一站前往的方式与耗时；是否需要专程}}</p>
+        <p>{{按实际人数的点法；排队超过建议上限时的附近替代}}</p>
+      </article></li>
+    </ol>
+    <section class="card">
+      <h3>遇到变化</h3>
+      <details><summary>{{适用的异常条件}}</summary><div class="detail-body">
+        <p>{{删减／替换动作、耗时变化、接回原路线的位置与最晚截止}}</p>
+      </div></details>
+    </section>
+  </section>
 
-  <div class="foot">单文件交互式攻略 · 手机可直接打开浏览，离线可用</div>
+  <!-- 无合适特产时删除整页及导航；卡片按有价值的推荐数量增减。 -->
+  <section id="souvenirs" data-page aria-labelledby="souvenirs-title">
+    <header class="page-head"><h2 id="souvenirs-title" tabindex="-1">伴手礼与特产</h2><p>{{顺路采购时机与适用携带提醒}}</p></header>
+    <article class="card">
+      <h3>{{商品名称}}</h3><p>{{价格范围与计价单位}}</p>
+      <p><strong>在哪里买：</strong>{{可找到的区域或已核验店铺}}</p>
+      <p><strong>为什么选这里：</strong>{{品质、价格或便利性的具体理由}}</p>
+      <p><strong>何时买：</strong>{{与每日路线及返程的衔接}}</p>
+      <p class="small">{{便携／易碎／冷藏等条件及有依据的溢价、踩坑或不建议购买项}}</p>
+    </article>
+  </section>
 
+  <section id="prep" data-page aria-labelledby="prep-title">
+    <header class="page-head"><h2 id="prep-title" tabindex="-1">出发前准备</h2><p>{{最重要的截止事项}}</p></header>
+    <div class="grid">
+      <section class="card"><h3>预订与证件</h3><ul><li>{{预订／确认行动及适用时间}}</li><li>{{所需证件}}</li></ul></section>
+      <section class="card"><h3>装备与行李</h3><ul><li>{{与天气和体力匹配的准备}}</li><li>{{寄存、过夜物品和取回安排}}</li></ul></section>
+      <section class="card full"><h3>出发前复核</h3><ul><li>{{需再次确认的交通、开放或天气条件及替代动作}}</li></ul></section>
+    </div>
+  </section>
+</main>
+<footer class="foot">旅行攻略 · {{攻略整理日期}} · 动态信息以标注的核验时间为准</footer>
 <script>
-/* ============ 1. 数据（按需替换，无地图、无需坐标） ============ */
-const OVERVIEW = {
-  route: "南京 → 成都 → 九寨沟/黄龙 → 成都 → 南京",
-  dailyCore: [
-    { day:"DAY 1", title:"抵蓉", highlights:"武侯祠 · 锦里 · 九眼桥" },
-    { day:"DAY 2", title:"进山", highlights:"动车+直通车 · 黄龙" }
-  ],
-  budget:{ total:"≈ ¥9,800（2人）", breakdown:[
-    {item:"机票",amount:"¥3,600"},{item:"动车+直通车",amount:"¥760"},
-    {item:"住宿",amount:"¥2,400"},{item:"门票+车+索道",amount:"¥1,740"},
-    {item:"餐饮",amount:"¥1,200"},{item:"市内交通",amount:"¥100"} ] },
-  transport:[
-    {mode:"✈️ 飞机",detail:"南京⇄成都 往返 ¥1,800/人"},
-    {mode:"🚄 动车",detail:"成都东⇄黄龙九寨站 约2h ¥143"},
-    {mode:"🚌 直通车",detail:"黄龙九寨站⇄沟口 约1h"} ],
-  intensity:[ {day:"DAY 1",level:"适中"},{day:"DAY 2",level:"较累"} ],
-  bookings:[ {item:"机票",lead:"提前1–2个月"},{item:"动车票",lead:"提前3–10天"} ]
-};
+/* 仅增强导航；原生锚点和折叠在无脚本时仍可用，不重建或拼接正文。 */
+(() => {
+  const pages = [...document.querySelectorAll("[data-page]")];
+  const links = [...document.querySelectorAll(".nav a")];
+  if (!pages.length) return;
 
-const PREP = { groups:[
-  {cat:"机票",items:[{name:"南京⇄成都 往返",lead:"提前1–2个月"}]},
-  {cat:"高铁票",items:[{name:"成都东→黄龙九寨站",lead:"提前3–10天"}]},
-  {cat:"酒店",items:[{name:"成都2晚/沟口1–2晚",lead:"提前2–4周"}]},
-  {cat:"景区门票",items:[{name:"九寨沟/黄龙",lead:"提前1–3天"}]},
-  {cat:"观光车/索道",items:[{name:"九寨观光车/黄龙索道",lead:"购票时选"}]},
-  {cat:"演出",items:[{name:"藏羌晚会(可选)",lead:"现场/携程"}]}
-]};
-
-const DAYS = [
-  { day:"DAY 1", icon:"🏮", date:"10/27 周二", title:"抵蓉 · 武侯祠与锦里", summary:"落地成都，武侯祠追三国，锦里尝小吃。",
-    weather:"18–24°C 多云", clothing:"薄外套+步行鞋", budget:"≈ ¥2,100（2人）",
-    intensity:"适中", walk:"≈1.2万步", transportTime:"主交通≈1.5h", maxAlt:"500m",
-    highlights:"武侯祠 · 锦里 · 九眼桥",
-    stay:"推荐住宿区(如市中心/景区附近)", stayWhy:"住宿理由：结合次日景点地理位置，减少交通往返",
-    pois:[
-      { t:"14:00", cat:"culture", name:"武侯祠",
-        desc:"三国圣地，君臣合祀。", tip:"红墙竹影很出片。",
-        move:"🚇 地铁至高升桥站步行10min",
-        stay:"2h", best:"14:00–16:00 人少光柔", booking:"公众号/美团购票", avoid:"正午逆光",
-        nearby:"大门外公厕、锦里餐饮", ticket:"¥50", order:"大门→汉昭烈庙→武侯祠→惠陵",
-        mustsee:"红墙夹道、诸葛亮殿", photo:"红墙竹影",
-        // 📷 拍照打卡：行程锁定后补充的附属信息，1–2 个机位、一句手机拍法；
-        // schedule_note 可给 ≤30 分钟可选微调（本例无需调整）
-        photo_info:{
-          spots:[
-            { location:"红墙夹道中段", subjects:["红墙","竹影","人像"], tip:"手机 1x 拍人沿墙走的抓拍，2x 压缩长廊纵深感；点红墙测光略压曝光红色更正" }
-          ],
-          best_time:"上午或傍晚光线更柔和（仅供参考）",
-          schedule_note:"当前安排 14:00–16:00 游览，下午侧光竹影也清晰，正常拍即可，无需为拍照调整行程"
-        },
-        nearbyRecs:[{name:"锦里",tag:"顺路推荐"},{name:"耍都",tag:"有时间再去"}] },
-      { t:"16:30", cat:"food", name:"锦里小吃",
-        desc:"川西小吃街。", tip:"现做现吃。",
-        move:"🚶 武侯祠出大门即到",
-        rtype:"小吃街", avg:"¥40/人", dishes:"三大炮/糖油果子/牛肉焦饼",
-        order2:"2人每样半份轮换尝", spice:"🌶🌶 中辣", queue:"傍晚高峰排队", worth:"顺路吃即可",
-        // 景观餐厅/有视觉特色的店也可挂 photo_info（「顺手拍」，1 个机位即可）
-        photo_info:{
-          spots:[
-            { location:"锦里正门牌坊与红灯笼街", subjects:["街景","夜景"], tip:"亮灯后手机夜景模式随手一张，牌坊居中对称构图" }
-          ],
-          best_time:"傍晚亮灯后氛围最好（仅供参考）",
-          schedule_note:"当前 16:30 到达边逛边吃，逛到亮灯正好顺手拍，无需调整"
-        },
-        nearbyRecs:[{name:"莲花府邸酒吧",tag:"有时间再去"}] }
-    ],
-    spare:{ complete:"武侯祠→锦里→九眼桥", easy:"只武侯祠+锦里", rainy:"武侯祠室内+锦里廊棚", short:"只武侯祠" }
+  function showPage(moveFocus) {
+    try {
+      let id = "";
+      try { id = decodeURIComponent(location.hash.slice(1)); } catch { /* 无效编码退回总览。 */ }
+      const target = document.getElementById(id);
+      const page = (target && target.closest("[data-page]")) || pages[0];
+      pages.forEach(item => { item.hidden = item !== page; });
+      links.forEach(link => {
+        if (link.hash === "#" + page.id) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      });
+      if (moveFocus) {
+        const heading = document.getElementById(page.getAttribute("aria-labelledby"));
+        if (heading) heading.focus({ preventScroll: true });
+        const current = links.find(link => link.hash === "#" + page.id);
+        if (current) current.scrollIntoView({ block: "nearest", inline: "center" });
+        (target && page.contains(target) ? target : page).scrollIntoView({ block: "start" });
+      }
+    } catch {
+      /* 增强异常时恢复完整正文，避免某日永久不可见。 */
+      pages.forEach(page => { page.hidden = false; });
+      links.forEach(link => link.removeAttribute("aria-current"));
+    }
   }
-  // ... 继续补充 DAY 2..N
-];
 
-/* ============ 2. 渲染 ============ */
-/* 住宿推荐（可选；按城市给出区域范围+价格+理由；day.stay 引用其中区域） */
-const STAY = {
-  summary:"全程以「市中心/景区附近」为大本营，减少每日交通往返；高原/山区日可按需加住一晚。",
-  areas:[
-    {area:"市中心·核心区", price:"¥300–600/晚", reason:"步行/地铁可达多数景点，吃饭逛街集中", fit:"多数日大本营"},
-    {area:"景区附近(可选)", price:"¥400–800/晚", reason:"看完返程直接回酒店、免深夜奔波", fit:"深度游某景区时可选"} ]
-};
-
-/* 伴手礼 / 特产（可选；给出购买地址与推荐理由） */
-const SOUVENIRS = [
-  { name:"特产A", type:"类别", where:"购买地址(商场/老店/超市)", price:"¥参考价", reason:"推荐理由：好带、代表性、性价比" },
-  { name:"特产B", type:"类别", where:"购买地址", price:"¥参考价", reason:"推荐理由" }
-];
-
-const CATNAME={scenic:"景点",food:"美食",culture:"文化",transit:"交通"};
-const $=(s,r=document)=>r.querySelector(s);
-let curPage="总览", curDay=0;
-
-function renderBadges(){
-  const poi=DAYS.reduce((a,d)=>a+d.pois.length,0);
-  $("#badges").innerHTML=`<div class="badge"><b>${DAYS.length}</b><small>天数</small></div>
-    <div class="badge"><b>${poi}</b><small>POI 数</small></div>
-    <div class="badge"><b>${OVERVIEW.budget.total.replace(/（.*/,'')}</b><small>总预算</small></div>`;
-}
-function renderNav(){
-  const ICONS={总览:"🧭",特产:"🎁",准备清单:"✅"};
-  const tabs=["总览",...DAYS.map(d=>d.day),"特产","准备清单"];
-  $("#nav").innerHTML=tabs.map(t=>{const d=DAYS.find(x=>x.day===t);const ic=ICONS[t]||(d&&d.icon)||"🗓";return `<button data-t="${t}" class="${t===curPage?'active':''}">${ic} ${t}</button>`;}).join("");
-  $("#nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{curPage=b.dataset.t; if(DAYS.find(d=>d.day===curPage))curDay=DAYS.findIndex(d=>d.day===curPage); renderNav(); renderPage();});
-  const ab=$("#nav .active"); if(ab) ab.scrollIntoView({block:"nearest",inline:"center"});
-}
-function lvClass(l){return l==="轻松"?"lv-easy":l==="较累"?"lv-hard":"lv-mid";}
-
-/* 📷 拍照打卡：行程锁定后的附属信息。有 photo_info 渲染轻量小框，否则回退旧的一行 photo 摘要 */
-function renderPhotoInfo(p){
-  if(!p.photo_info){
-    return p.photo ? `<div style="grid-column:1/3"><b>拍照</b>${p.photo}</div>` : "";
-  }
-  const pi=p.photo_info;
-  const spots=(pi.spots||[]).map(s=>`<div class="pi-spot">📷 <b>${s.location}</b>
-    ${(s.subjects||[]).length?`<span class="ps-tags">${s.subjects.map(t=>`<span class="ps-tag">${t}</span>`).join("")}</span>`:""}
-    ${s.tip?`<br>${s.tip}`:""}</div>`).join("");
-  return `<div class="photo-info">
-    <div class="pi-title">📷 拍照打卡</div>
-    ${spots}
-    ${pi.best_time?`<div class="pi-best">⏰ 参考时间：${pi.best_time}</div>`:""}
-    ${pi.schedule_note?`<div class="pi-note">🗓 ${pi.schedule_note}</div>`:""}
-  </div>`;
-}
-
-function poiCard(p,i){
-  const d=p.cat==="food"?`
-    <div class="detail" id="d-${curDay}-${i}">
-      <div class="grid">
-        <div><b>人均</b>${p.avg||''}</div><div><b>类型</b>${p.rtype||''}</div>
-        <div><b>推荐菜</b>${p.dishes||''}</div><div><b>2人点法</b>${p.order2||''}</div>
-        <div><b>辣度</b>${p.spice||''}</div><div><b>排队</b>${p.queue||''}</div>
-        <div style="grid-column:1/3"><b>值得</b>${p.worth||''}</div>
-        ${renderPhotoInfo(p)}
-        <div style="grid-column:1/3"><b>附近</b>${(p.nearbyRecs||[]).map(r=>`<span class="rec ${r.tag.includes('不')?'warn':''}">${r.name}·${r.tag}</span>`).join("")}</div>
-      </div></div>`
-   :`<div class="detail" id="d-${curDay}-${i}"><div class="grid">
-        <div><b>停留</b>${p.stay||''}</div><div><b>最佳</b>${p.best||''}</div>
-        <div><b>门票</b>${p.ticket||''}</div><div><b>预约</b>${p.booking||''}</div>
-        <div style="grid-column:1/3"><b>顺序</b>${p.order||''}</div>
-        <div style="grid-column:1/3"><b>必看</b>${p.mustsee||''}</div>
-        ${renderPhotoInfo(p)}
-        <div style="grid-column:1/3"><b>避坑</b>${p.avoid||''}</div>
-        <div style="grid-column:1/3"><b>便民</b>${p.nearby||''}</div>
-        ${(p.internal||[]).length?`<div style="grid-column:1/3" class="internal">${p.internal.map(s=>`<div class="pri-${s.priority}">${s.mode} ${s.text}</div>`).join("")}</div>`:""}
-        <div style="grid-column:1/3"><b>附近</b>${(p.nearbyRecs||[]).map(r=>`<span class="rec ${r.tag.includes('不')?'warn':''}">${r.name}·${r.tag}</span>`).join("")}</div>
-      </div></div>`;
-  return `<div class="card" data-day="${curDay}" data-i="${i}">
-    <span class="dot ${p.cat}"></span>
-    <div class="top"><span class="time">${p.t}</span><span class="pill ${p.cat}">${CATNAME[p.cat]}</span><h3 style="margin-left:auto">${p.name}</h3></div>
-    <div class="desc">${p.desc||''}</div>
-    ${p.move?`<span class="move">🚦 ${p.move}</span>`:""}
-    <div class="meta"><span><b>停留</b>${p.stay||''}</span><span><b>门票</b>${p.ticket||''}</span></div>
-    ${p.tip?`<span class="tip">💡 ${p.tip}</span>`:""}
-    <div class="toggle" onclick="toggleDetail(event,${curDay},${i})">▾ 展开攻略</div>${d}
-  </div>`;
-}
-function toggleDetail(e,day,i){ e.stopPropagation(); const el=$(`#d-${day}-${i}`); el.classList.toggle("open"); e.target.textContent=el.classList.contains("open")?"▴ 收起攻略":"▾ 展开攻略"; }
-function renderDay(d){
-  const dash=`<div class="dash">
-    <div class="chip"><b>🌤</b>${d.weather}</div><div class="chip"><b>🧥</b>${d.clothing}</div>
-    <div class="chip"><b>💰</b>${d.budget}</div><div class="chip ${lvClass(d.intensity)}"><b>强度</b>${d.intensity}</div>
-    <div class="chip"><b>🚶</b>${d.walk}</div><div class="chip"><b>⏱</b>${d.transportTime}</div>
-    ${d.maxAlt?`<div class="chip"><b>⛰</b>${d.maxAlt}</div>`:""}<div class="chip"><b>✨</b>${d.highlights}</div></div>`;
-  $("#main").innerHTML=`<div class="sec"><h2>${d.day} · ${d.title} <small style="color:var(--muted);font-weight:400">${d.date}</small></h2>
-    <p class="lead">${d.summary}</p>
-    <div class="stay-line">🏨 今晚住宿：<b>${d.stay}</b><span class="stay-why">${d.stayWhy}</span></div></div>${dash}
-    <div class="timeline">${d.pois.map((p,i)=>poiCard(p,i)).join("")}</div>
-    <div class="sec"><h2>备用方案</h2>
-      <details><summary>推荐完整路线</summary><p class="lead">${d.spare.complete}</p></details>
-      <details><summary>轻松版</summary><p class="lead">${d.spare.easy}</p></details>
-      <details><summary>雨天备用</summary><p class="lead">${d.spare.rainy}</p></details>
-      <details><summary>时间不足精简</summary><p class="lead">${d.spare.short}</p></details></div>`;
-}
-function renderOverview(){
-  $("#main").innerHTML=`<div class="sec"><h2>整体路线</h2><p>${OVERVIEW.route}</p></div>
-    <div class="sec"><h2>每日核心</h2><div class="ov-grid">${OVERVIEW.dailyCore.map(d=>`<div class="ov-card"><h4>${d.day} ${d.title}</h4><p class="lead">${d.highlights}</p></div>`).join("")}</div></div>
-    <div class="sec"><h2>总预算 ${OVERVIEW.budget.total}</h2><div class="budget-bar"></div>${OVERVIEW.budget.breakdown.map(b=>`<div class="lead">${b.item}：${b.amount}</div>`).join("")}</div>
-    <div class="sec"><h2>交通结构</h2>${OVERVIEW.transport.map(t=>`<div class="lead">${t.mode} ${t.detail}</div>`).join("")}</div>
-    <div class="sec"><h2>住宿推荐</h2><p class="lead">${STAY.summary}</p><div class="ov-grid" style="margin-top:12px">${STAY.areas.map(a=>`<div class="ov-card"><h4>${a.area}</h4><p class="lead">💰 ${a.price}</p><p class="lead">${a.reason}</p><p class="lead"><b>适合</b> ${a.fit}</p></div>`).join("")}</div></div>
-    <div class="sec"><h2>行程强度</h2>${OVERVIEW.intensity.map(x=>`<span class="chip ${lvClass(x.level)}">${x.day} · ${x.level}</span>`).join(" ")}</div>
-    <div class="sec"><h2>重要预约</h2>${OVERVIEW.bookings.map(b=>`<div class="lead">${b.item}：提前 ${b.lead}</div>`).join("")}</div>`;
-}
-function renderPrep(){
-  $("#main").innerHTML=`<div class="sec"><h2>准备清单</h2>${PREP.groups.map(g=>`<div class="ov-card" style="margin-top:10px"><h4>${g.cat}</h4>${g.items.map(it=>`<div class="lead">· ${it.name} <b>（提前 ${it.lead}）</b></div>`).join("")}</div>`).join("")}</div>`;
-}
-function renderSouvenirs(){
-  $("#main").innerHTML=`<div class="sec"><h2>伴手礼 · 特产清单</h2><p class="lead">建议集中在老字号/大超市一次购齐；真空/干货/米面可带上飞机，液体注意托运。</p></div>
-   <div class="souv-grid">${SOUVENIRS.map(s=>`<div class="ov-card">
-     <div style="display:flex;gap:8px;align-items:center"><span class="souv-type">${s.type}</span><h4 style="margin:0">${s.name}</h4></div>
-     <p class="lead" style="margin-top:8px"><b>参考价</b> ${s.price}</p>
-     <p class="lead"><b>📍 购买</b> ${s.where}</p>
-     <p class="lead" style="color:#b06a00"><b>💡 推荐理由</b> ${s.reason}</p>
-   </div>`).join("")}</div>`;
-}
-function renderPage(){
-  if(curPage==="总览")renderOverview();
-  else if(curPage==="准备清单")renderPrep();
-  else if(curPage==="特产")renderSouvenirs();
-  else renderDay(DAYS.find(d=>d.day===curPage));
-}
-
-/* ============ 3. 启动（本模板无地图模块） ============ */
-$("#bTitle").textContent=OVERVIEW.route.split(" → ").slice(0,2).join(" → ")+" · "+DAYS.length+" 日攻略";
-renderBadges(); renderNav(); renderPage();
+  window.addEventListener("hashchange", () => showPage(true));
+  showPage(Boolean(location.hash));
+})();
 </script>
 </body>
 </html>
