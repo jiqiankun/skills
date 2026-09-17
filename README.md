@@ -10,6 +10,7 @@
 | `grill-me` | `grilling` 的快捷别名 | 直接以 `/grilling` 方式追问 |
 | `grill-with-docs` | `grilling` 的快捷别名，额外产出 ADR 与术语表文档 | 需要边访谈边沉淀文档 |
 | `java-dev` | 基于阿里 Java 开发手册（嵩山版）的 Java 开发规范 | Java 编码、评审、重构、数据库与 API 设计、单元测试、并发与安全 |
+| `backend-mock-interview` | 根据 JD、真实经历与现场回答动态追问，探索能力边界，复盘后支持重答训练 | 初级、中级、高级后端模拟面试 |
 | `scene-distillation-zine` | 将照片转化为插画风纸海报（不保留照片像素） | 编辑性视觉再诠释 |
 | `scenes-gathered-zine` | 将照片转化为编辑风纸海报（以摄影真实为主导） | 美观易读的纸海报创作 |
 | `travel-guide-html` | 规划并制作攻略内容优先、手机阅读舒适的单文件旅行 HTML（无地图） | 旅行 HTML、交互式网页攻略、已有行程转 HTML |
@@ -72,7 +73,7 @@ Copy-Item -LiteralPath .\travel-guide-html -Destination "$env:USERPROFILE\.codex
 
 ## 版本
 
-当前版本：`v2.0.0`（2026-09-16）。详细内容见 [版本变更记录](CHANGELOG.md)。
+当前版本：`v2.1.0`（2026-09-17）。详细内容见 [版本变更记录](CHANGELOG.md)。
 
 ## 项目结构
 
@@ -81,6 +82,7 @@ grilling/                    方案追问
 grill-me/                    方案追问别名
 grill-with-docs/             方案追问别名（含文档产出）
 java-dev/                    阿里 Java 开发规范
+backend-mock-interview/       后端模拟面试与岗位匹配复盘
 scene-distillation-zine/     影像蒸馏纸海报
 scenes-gathered-zine/        实景拼贴纸海报
 travel-guide-html/           交互式旅行攻略 HTML
