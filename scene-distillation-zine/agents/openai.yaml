@@ -1,0 +1,4 @@
+interface:
+  display_name: "影像蒸馏 · Scene Distillation"
+  short_description: "无摄影像素地重绘照片，优先获得漂亮清晰、和谐亲和的纸刊插画"
+  default_prompt: "Use $scene-distillation-zine to turn this photo into a broadly appealing illustrated paper poster with a clear attractive subject, harmonious color, graceful abstraction, and no retained photographic pixels."

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{旅行标题}}</title>
+<!-- 填充全部占位符；按实际天数复制每日区块及导航，删除不适用内容。正文不依赖脚本。 -->
+<style>
+  /* 基础与视觉 */
+  :root {
+    --bg: #f6f8fc; --card: #fff; --ink: #132d48; --muted: #526477;
+    --line: #dce4ed; --accent: #3654bb; --soft: #edf2ff;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; overflow-wrap: anywhere; }
+  h1, h2, h3, h4, p, dl { margin: 0; }
+  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.3; letter-spacing: -.035em; }
+  h2 { font-size: 1.4rem; line-height: 1.45; }
+  h3 { font-size: 1.1rem; line-height: 1.5; }
+  h4 { font-size: 1rem; }
+  p + p, p + ul, p + ol { margin-top: 8px; }
+  ul, ol { padding-left: 1.4em; }
+  li + li { margin-top: 6px; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  [hidden] { display: none !important; }
+  .muted, .small { color: var(--muted); }
+  .small { font-size: .875rem; }
+  .banner { padding: 32px 20px; background: radial-gradient(ellipse at 85% 0, #e0f2f0, transparent 60%), linear-gradient(115deg, #edf3ff, #f3efff 65%, #edf8f5); border-bottom: 1px solid var(--line); }
+  .banner-inner { max-width: 1040px; margin: auto; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: center; }
+  .eyebrow { margin-bottom: 10px; color: var(--accent); font-size: .875rem; font-weight: 700; letter-spacing: .12em; }
+  .trip-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; color: var(--muted); font-size: .875rem; }
+  .hero-note { padding: 18px 20px; border: 1px solid #d5dfee; border-radius: 16px; background: rgb(255 255 255 / 65%); }
+  .hero-note strong { display: block; margin-bottom: 8px; }
+  .hero-note p + p { margin-top: 10px; }
+  @media (min-width: 800px) { .banner { padding: 48px 24px; } .hero-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 40px; } }
+  .cover { margin: 20px 0 0; }
+  .cover img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: var(--soft); }
+  .cover figcaption { margin-top: 6px; color: var(--muted); font-size: .875rem; }
+  .skip-link { position: absolute; top: 8px; left: 8px; z-index: 30; padding: 10px; background: white; transform: translateY(-180%); }
+  .skip-link:focus { transform: none; }
+
+  /* 导航与响应式布局 */
+  .nav { position: sticky; top: 0; z-index: 20; display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto; background: var(--card); border-bottom: 1px solid var(--line); box-shadow: 0 3px 12px rgb(10 37 64 / 3%); }
+  .nav::before, .nav::after { content: ""; margin: auto; }
+  .nav a { display: flex; align-items: center; flex: 0 0 auto; min-height: 44px; padding: 8px 14px; border-radius: 24px; text-decoration: none; white-space: nowrap; font-size: .9375rem; }
+  .nav a[aria-current="page"] { background: var(--accent); color: #fff; }
+  .layout { max-width: 1080px; margin: auto; padding: 24px 16px; }
+  [data-page], [id] { scroll-margin-top: 5.5rem; }
+  [data-page] { margin-bottom: 24px; }
+  .page-head { margin-bottom: 20px; }
+  .page-head p { margin-top: 8px; }
+  .card { min-width: 0; padding: 18px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); box-shadow: 0 6px 18px rgb(10 37 64 / 3%); }
+  .card > h3, .card > h4 { margin-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .grid > * { min-width: 0; }
+  .grid .card { margin: 0; }
+  .full { grid-column: 1 / -1; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .day-link { display: block; min-height: 44px; padding: 8px 0; font-weight: 650; text-decoration: none; }
+  .day-link:hover { text-decoration: underline; }
+  .note { padding: 12px; margin: 12px 0; border-left: 3px solid var(--accent); border-radius: 4px; background: var(--soft); }
+  .dashboard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+  .dashboard > div { min-width: 0; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  dt { color: var(--muted); font-size: .875rem; }
+  dd { margin: 2px 0 0; font-weight: 600; }
+  @media (min-width: 800px) { .dashboard { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  /* 时间轴与原生折叠 */
+  .timeline { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--line); }
+  .timeline > li { margin: 0; position: relative; }
+  .timeline > li::before { content: ""; position: absolute; top: 23px; left: -20px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+  .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; font-size: .875rem; }
+  .meta > span:first-child { font-weight: 700; color: var(--accent); }
+  .tag { padding: 2px 9px; border-radius: 20px; background: #eef2f6; color: #48586a; }
+  .tag.scenic { background: #e6f6f2; color: #096956; }
+  .tag.food { background: #fff0ed; color: #9c3a2a; }
+  .tag.culture { background: #f1edff; color: #5c419c; }
+  .move { margin-top: 8px; color: var(--muted); font-size: .875rem; }
+  details { margin-top: 12px; border-top: 1px solid var(--line); }
+  summary { min-height: 44px; padding: 10px 4px; cursor: pointer; color: var(--accent); font-weight: 600; }
+  .detail-body { padding: 4px 0 8px; }
+  .detail-body h4 { margin-bottom: 4px; }
+  .foot { max-width: 1080px; padding: 16px; margin: auto; color: var(--muted); font-size: .875rem; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到攻略正文</a>
+<header class="banner">
+  <div class="banner-inner hero-grid">
+    <div>
+      <p class="eyebrow">旅行计划</p>
+      <h1>{{旅行标题}}</h1>
+      <div class="trip-meta"><span>{{日期或适用季节}}</span><span>{{天数}}</span><span>{{人数或计价口径}}</span></div>
+    </div>
+    <aside class="hero-note" aria-label="旅行摘要">
+      <strong>这趟旅行的重点</strong>
+      <p>{{最值得体验的内容与整体节奏}}</p>
+      <p class="small">{{关键偏好与必要假设}}</p>
+    </aside>
+  </div>
+</header>
+<nav class="nav" aria-label="攻略导航">
+  <a href="#overview">总览</a>
+  <a href="#day-1">Day 1</a>
+  <a href="#souvenirs">特产</a>
+  <a href="#prep">准备清单</a>
+</nav>
+<main id="main" class="layout" tabindex="-1">
+  <section id="overview" data-page aria-labelledby="overview-title">
+    <header class="page-head"><p class="eyebrow">先看全程</p><h2 id="overview-title" tabindex="-1">行程总览</h2><p>{{整体路线与住宿夜数}}</p></header>
+    <section class="card"><h3>为什么这样安排</h3><p>{{按地理顺序、开放条件与同行偏好说明路线逻辑和取舍}}</p>
+      <!-- 有合适的真实目的地图片时可添加 cover 图文区：HTTPS 地址、替代文字、固定比例及来源说明。 -->
+    </section>
+    <div class="card">
+      <h3>每日核心</h3>
+      <a class="day-link" href="#day-1">Day 1 · {{当日主题}}</a>
+      <p class="small">{{核心安排与强度；从最终每日计划提取}}</p>
+    </div>
+    <div class="grid">
+      <section class="card"><h3>往返与衔接</h3><p>{{已确认交通或建议时间窗、站点与首尾安排}}</p></section>
+      <section class="card"><h3>费用参考</h3><p>{{总额或范围、口径与主要分项}}</p><p class="small">{{未包含项目与可选费用}}</p></section>
+      <!-- 无住宿需求时删除此区块；候选区域仅在存在实际取舍时追加。 -->
+      <section class="card full">
+        <h3>住在哪一带</h3><p><strong>{{首选区域及适用夜晚}}</strong> · {{每间每晚价格范围}}</p>
+        <p>{{与前日终点、次日首站和返程节点的关系；早餐、夜宵、交通与行李取舍}}</p>
+        <p class="small">{{有意义的备选区域及选择条件；不适用则删除本段}}</p>
+      </section>
+    </div>
+    <div class="note"><strong>优先确认：</strong>{{关键预约、截止时间与尚待确认的影响}}</div>
+    <section id="sources" class="card">
+      <h3>信息核验</h3>
+      <p class="small">{{关键结论、来源名称、核验日期与状态；有可靠网址时添加普通链接}}</p>
+      <p class="small">来源链接提供核验依据，出发前请复核会影响行程的动态信息。</p>
+    </section>
+  </section>
+
+  <!-- 按实际天数复制本区块，将 day-1 和 day-1-title 改为唯一 ID，同步导航和总览入口。 -->
+  <section id="day-1" data-page aria-labelledby="day-1-title">
+    <header class="page-head"><p class="eyebrow">每日安排</p><h2 id="day-1-title" tabindex="-1">Day 1 · {{当日主题}}</h2><p>{{日期与连续游览链}}</p><p class="muted">{{这一天的核心体验及游玩节奏}}</p></header>
+    <div class="card">
+      <dl class="dashboard">
+        <div><dt>出发 → 结束</dt><dd>{{建议出发时间}} → {{建议结束时间}}</dd></div>
+        <div><dt>核心景点</dt><dd>{{排除餐厅和交通节点后的数量}}</dd></div>
+        <div><dt>步行与强度</dt><dd>{{步行范围、坡度／台阶及强度}}</dd></div>
+        <div><dt>主要交通</dt><dd>{{方式与门到门总耗时范围}}</dd></div>
+        <div><dt>当日花费</dt><dd>{{预算或主要支出及口径}}</dd></div>
+        <div><dt>天气与穿衣</dt><dd>{{预报或季节参考、核验日期与衣着建议}}</dd></div>
+      </dl>
+      <p class="note"><strong>今日提醒：</strong>{{预约、最晚离开等真正影响执行的事项}}</p>
+      <p>{{当晚住宿及衔接；返程日改为取行李与去站点安排}}</p>
+    </div>
+
+    <ol class="timeline" aria-label="当日时间轴">
+      <!-- 交通、休息和入住节点保持简短，无需景点详情。 -->
+      <li><article class="card">
+        <div class="meta"><span>{{出发或到达时间}}</span><span class="tag">交通</span></div>
+        <h3>{{站点或接驳节点}}</h3><p>{{出站、取行李、寄存或接车安排与缓冲}}</p>
+      </article></li>
+      <li><article class="card">
+        <div class="meta"><span>{{游览开始—结束}}</span><span class="tag scenic">景点</span></div>
+        <h3>{{核心景点名称}}</h3><p>{{为什么值得去、核心体验与停留时长}}</p>
+        <p class="move">{{前站 → 本站入口：交通方式、步行换乘与总耗时}}</p>
+        <p class="note">{{门票与单位、关键预约／开放限制、核验状态；无关键提醒则删除本段}}</p>
+        <details>
+          <summary>展开景点攻略</summary>
+          <div class="detail-body grid">
+            <div><h4>游览顺序</h4><p>{{入口 → 主要看点 → 出口；大型景区补内部接驳和步行}}</p></div>
+            <div><h4>看什么、怎么看</h4><p>{{核心看点、值得了解的背景和容易错过的细节}}</p></div>
+            <div><h4>到达与取舍</h4><p>{{最佳到达时段及原因、时间不足可跳过的内容}}</p></div>
+            <div><h4>实用提醒</h4><p>{{适用的避坑、休息、厕所、寄存与无障碍信息}}</p></div>
+            <!-- 附近项不适用时删除；摄影有需求时在此处添加次级段落。 -->
+            <div class="full"><h4>有余裕再去 · 可选</h4><p>{{真正顺路的地点、插入位置、往返加游览耗时，以及接回主线的方法}}</p></div>
+          </div>
+        </details>
+        <p class="move">{{从哪个出口离开、下一站怎么走及最晚离开时间（适用时）}}</p>
+      </article></li>
+      <!-- 按时间插入早餐、午餐、晚餐与休息；小吃和夜宵按需追加。 -->
+      <li><article class="card">
+        <div class="meta"><span>{{用餐开始—结束}}</span><span class="tag food">正餐</span></div>
+        <h3>{{餐次与顺路区域或已核验店铺}}</h3><p>{{当地特色、推荐菜、人均区间与口味适配}}</p>
+        <p class="move">{{从上一站前往的方式与耗时；是否需要专程}}</p>
+        <p>{{按实际人数的点法；排队超过建议上限时的附近替代}}</p>
+      </article></li>
+    </ol>
+    <section class="card">
+      <h3>遇到变化</h3>
+      <details><summary>{{适用的异常条件}}</summary><div class="detail-body">
+        <p>{{删减／替换动作、耗时变化、接回原路线的位置与最晚截止}}</p>
+      </div></details>
+    </section>
+  </section>
+
+  <!-- 无合适特产时删除整页及导航；卡片按有价值的推荐数量增减。 -->
+  <section id="souvenirs" data-page aria-labelledby="souvenirs-title">
+    <header class="page-head"><h2 id="souvenirs-title" tabindex="-1">伴手礼与特产</h2><p>{{顺路采购时机与适用携带提醒}}</p></header>
+    <article class="card">
+      <h3>{{商品名称}}</h3><p>{{价格范围与计价单位}}</p>
+      <p><strong>在哪里买：</strong>{{可找到的区域或已核验店铺}}</p>
+      <p><strong>为什么选这里：</strong>{{品质、价格或便利性的具体理由}}</p>
+      <p><strong>何时买：</strong>{{与每日路线及返程的衔接}}</p>
+      <p class="small">{{便携／易碎／冷藏等条件及有依据的溢价、踩坑或不建议购买项}}</p>
+    </article>
+  </section>
+
+  <section id="prep" data-page aria-labelledby="prep-title">
+    <header class="page-head"><h2 id="prep-title" tabindex="-1">出发前准备</h2><p>{{最重要的截止事项}}</p></header>
+    <div class="grid">
+      <section class="card"><h3>预订与证件</h3><ul><li>{{预订／确认行动及适用时间}}</li><li>{{所需证件}}</li></ul></section>
+      <section class="card"><h3>装备与行李</h3><ul><li>{{与天气和体力匹配的准备}}</li><li>{{寄存、过夜物品和取回安排}}</li></ul></section>
+      <section class="card full"><h3>出发前复核</h3><ul><li>{{需再次确认的交通、开放或天气条件及替代动作}}</li></ul></section>
+    </div>
+  </section>
+</main>
+<footer class="foot">旅行攻略 · {{攻略整理日期}} · 动态信息以标注的核验时间为准</footer>
+<script>
+/* 仅增强导航；原生锚点和折叠在无脚本时仍可用，不重建或拼接正文。 */
+(() => {
+  const pages = [...document.querySelectorAll("[data-page]")];
+  const links = [...document.querySelectorAll(".nav a")];
+  if (!pages.length) return;
+
+  function showPage(moveFocus) {
+    try {
+      let id = "";
+      try { id = decodeURIComponent(location.hash.slice(1)); } catch { /* 无效编码退回总览。 */ }
+      const target = document.getElementById(id);
+      const page = (target && target.closest("[data-page]")) || pages[0];
+      pages.forEach(item => { item.hidden = item !== page; });
+      links.forEach(link => {
+        if (link.hash === "#" + page.id) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      });
+      if (moveFocus) {
+        const heading = document.getElementById(page.getAttribute("aria-labelledby"));
+        if (heading) heading.focus({ preventScroll: true });
+        const current = links.find(link => link.hash === "#" + page.id);
+        if (current) current.scrollIntoView({ block: "nearest", inline: "center" });
+        (target && page.contains(target) ? target : page).scrollIntoView({ block: "start" });
+      }
+    } catch {
+      /* 增强异常时恢复完整正文，避免某日永久不可见。 */
+      pages.forEach(page => { page.hidden = false; });
+      links.forEach(link => link.removeAttribute("aria-current"));
+    }
+  }
+
+  window.addEventListener("hashchange", () => showPage(true));
+  showPage(Boolean(location.hash));
+})();
+</script>
+</body>
+</html>
