@@ -1,6 +1,6 @@
 # Codex Skills
 
-个人 Codex Skills 集合，覆盖方案追问、后端模拟面试、Java 开发规范、纸海报创作与旅行攻略等场景。
+个人 Codex Skills 集合，覆盖方案追问、后端模拟面试、Java 开发规范、中文宝宝取名、纸海报创作与旅行攻略等场景。
 
 ## 技能总览
 
@@ -11,19 +11,21 @@
 | `grill-with-docs` | `grilling` 的快捷别名，额外产出 ADR 与术语表文档 | 需要边访谈边沉淀文档 |
 | `java-dev` | 基于阿里 Java 开发手册（嵩山版）的 Java 开发规范 | Java 编码、评审、重构、数据库与 API 设计、单元测试、并发与安全 |
 | `backend-mock-interview` | 根据 JD、真实经历与现场回答动态追问，探索能力边界，复盘后支持重答训练 | 初级、中级、高级后端模拟面试 |
+| `chinese-baby-naming` | 按完整姓名分析音形义、出处及使用风险，生成、比较并定向优化候选 | 宝宝取名、已有名字评价、古诗词取名；传统姓名学可选 |
 | `scene-distillation-zine` | 将照片转化为插画风纸海报（不保留照片像素） | 编辑性视觉再诠释 |
 | `scenes-gathered-zine` | 将照片转化为编辑风纸海报（以摄影真实为主导） | 美观易读的纸海报创作 |
 | `travel-guide-html` | 规划并制作攻略内容优先、手机阅读舒适的单文件旅行 HTML（无地图） | 旅行 HTML、交互式网页攻略、已有行程转 HTML |
 
 ## 安装
 
-将任一 Skill 目录复制到 Codex 个人技能目录即可：
+将任一 Skill 目录复制到宿主的技能搜索目录。当前 [OpenAI 官方文档](https://developers.openai.com/codex/skills/) 列出的用户级目录为 `~/.agents/skills`；已有环境若配置其他目录，以实际 Skills 列表为准，避免重复安装同名技能。目标不存在时可运行：
 
 ```powershell
-Copy-Item -LiteralPath .\<skill> -Destination "$env:USERPROFILE\.codex\skills\<skill>" -Recurse
+New-Item -ItemType Directory -Path "$env:USERPROFILE\.agents\skills" -Force | Out-Null
+Copy-Item -LiteralPath .\<skill> -Destination "$env:USERPROFILE\.agents\skills\<skill>" -Recurse
 ```
 
-随后在新的对话轮次中通过技能名或斜杠命令调用，例如 `/grilling`。
+随后通过技能名调用，例如 `使用 $grilling`；若尚未发现新技能，检查搜索目录或重启 Codex。
 
 ## 方案追问
 
@@ -69,6 +71,24 @@ Copy-Item -LiteralPath .\<skill> -Destination "$env:USERPROFILE\.codex\skills\<s
 
 完整行为规则见 [`backend-mock-interview/SKILL.md`](backend-mock-interview/SKILL.md)，复盘与重答规则见 [`backend-mock-interview/references/debrief.md`](backend-mock-interview/references/debrief.md)。
 
+## 中文宝宝取名
+
+`chinese-baby-naming` 支持从零取名、已有姓名评价、多个名字比较、定向优化、指定文化来源，以及明确请求的传统姓名学。始终分析完整姓名，支持复姓，并在多轮调整中保留禁字、字辈和已拒绝候选等约束。
+
+只给姓氏即可先获得 3～5 个探索候选；普通推荐默认 5～8 个，数量服从用户。每名说明读音、整体寓意、优势、具体不足与待核事项，再帮助收敛选择。普通取名不索取出生日期或时辰，默认直接在聊天中回答，只有请求文件才生成报告。
+
+需要数字比较时采用七维现代评价，未知项不填分，有非零权重未知项就不报确定总分；严重风险独立拦截。八字五行、生肖、五格三才仅明确请求时启用，与现代分数和排序分开。古典出处需核对原文、语境和取字关系；字音、方言、规范字、登记及重名统计各自核验，缺工具时说明待核，不编造查询结果。可选 Python 脚本仅做机械约束、同名标记与算分，无外部数据或历法引擎，普通使用不依赖 Python。
+
+```text
+使用 $chinese-baby-naming，姓林，给宝宝推荐3个简洁自然的双字名，不用轩。
+使用 $chinese-baby-naming，评价“杜子腾”，说明全名读音、优点和使用风险。
+使用 $chinese-baby-naming，比较沈知远、沈明远，重点看读写和成年后的使用。
+使用 $chinese-baby-naming，姓吴，保留明净开阔的意象，不用澄字，给2个更现代的替代。
+使用 $chinese-baby-naming，姓周，从《诗经》取3个名字，核实原句、语境和取字关系。
+```
+
+文件入口、当前宿主的安装路径说明及示例见 [使用说明](chinese-baby-naming/README.md)，测试范围与限制见 [验收记录](chinese-baby-naming/tests/verification.md)。
+
 ## 影像蒸馏
 
 `scene-distillation-zine` 将用户提供的照片转化为独立成画的插画风纸海报，最终画面不保留任何照片像素；强调第一眼的普适美感、清晰的主角和协调的构图色彩，同时保留一处来自源图的安静张力。支持「单色块模式」触发词。输出为生成图像、简短中文创作说明与美术指导说明。
@@ -92,7 +112,7 @@ Copy-Item -LiteralPath .\<skill> -Destination "$env:USERPROFILE\.codex\skills\<s
 将 Skill 安装到 Codex 个人目录：
 
 ```powershell
-Copy-Item -LiteralPath .\travel-guide-html -Destination "$env:USERPROFILE\.codex\skills\travel-guide-html" -Recurse
+Copy-Item -LiteralPath .\travel-guide-html -Destination "$env:USERPROFILE\.agents\skills\travel-guide-html" -Recurse
 ```
 
 在新的对话轮次中调用：
@@ -109,7 +129,7 @@ Copy-Item -LiteralPath .\travel-guide-html -Destination "$env:USERPROFILE\.codex
 
 ## 版本
 
-当前版本：`v2.1.0`（2026-09-17）。详细内容见 [版本变更记录](CHANGELOG.md)。
+当前版本：`v2.2.0`（2026-10-17）。详细内容见 [版本变更记录](CHANGELOG.md)。
 
 ## 项目结构
 
@@ -119,6 +139,7 @@ grill-me/                    方案追问别名
 grill-with-docs/             方案追问别名（含文档产出）
 java-dev/                    阿里 Java 开发规范
 backend-mock-interview/       后端模拟面试与岗位匹配复盘
+chinese-baby-naming/          中文宝宝取名与姓名分析
 scene-distillation-zine/     影像蒸馏纸海报
 scenes-gathered-zine/        实景拼贴纸海报
 travel-guide-html/           交互式旅行攻略 HTML
