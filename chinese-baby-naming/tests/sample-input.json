@@ -1,0 +1,24 @@
+{
+  "surname": "欧阳",
+  "constraints": {
+    "banned_chars": ["梓", "轩"],
+    "given_lengths": [2],
+    "rejected_names": ["欧阳旧名"]
+  },
+  "candidates": [
+    {
+      "given": "明川",
+      "scores": {
+        "phonology": {"value": 4, "reason": "仅演示人工评分的汇总；不是自动读音判断。"},
+        "meaning": {"value": 4, "reason": "示例暂定值，实际需分析整体意象。"},
+        "usability": {"value": 4, "reason": "示例暂定值，不代表字表或登记通过。"},
+        "longevity": {"value": 4, "reason": "示例暂定值，实际需说明年龄场景。"},
+        "distinctiveness": {"value": null, "reason": "没有重名数据，本演示不评分。"},
+        "context": {"value": 3, "reason": "示例暂定值，未做方言检查。"},
+        "family": {"value": null, "reason": "未提供家庭偏好。"}
+      }
+    },
+    {"given": "明川", "risks": [{"severity": "unverified", "reason": "重复输入示例，保留本条待核项。"}]},
+    {"given": "梓轩"}
+  ]
+}

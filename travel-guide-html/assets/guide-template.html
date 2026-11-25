@@ -4,86 +4,159 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{旅行标题}}</title>
-<!-- 填充全部占位符；按实际天数复制每日区块及导航，删除不适用内容。正文不依赖脚本。 -->
+<!-- 填充全部占位符；按实际天数复制每日区块、同步导航、总览入口与页底翻页，删除不适用内容。正文不依赖脚本。 -->
 <style>
-  /* 基础与视觉 */
+  /* 基础与视觉；可按目的地微调顶部极浅氛围色变量，保持浅底深字与主强调蓝不变。 */
   :root {
+    color-scheme: light;
     --bg: #f6f8fc; --card: #fff; --ink: #132d48; --muted: #526477;
-    --line: #dce4ed; --accent: #3654bb; --soft: #edf2ff;
+    --line: #dce4ed; --line-soft: #eaf0f6; --accent: #3654bb; --soft: #edf2ff;
+    --warn-bg: #fff8eb; --warn-line: #b4690e; --warn-ink: #6e3d00;
+    --hero-a: #edf3ff; --hero-b: #f3efff; --hero-c: #edf8f5; --hero-glow: #dff2ef;
+    --shadow: 0 1px 2px rgb(19 45 72 / 4%), 0 8px 22px rgb(19 45 72 / 4%);
+    --container: 1032px; --pad-x: 16px; --card-py: 16px;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; overflow-wrap: anywhere; }
-  h1, h2, h3, h4, p, dl { margin: 0; }
-  h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.3; letter-spacing: -.035em; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; overflow-wrap: anywhere; }
+  h1, h2, h3, h4, p, dl, ul, ol, figure { margin: 0; }
+  h1 { font-size: clamp(1.75rem, 4vw, 2.65rem); line-height: 1.3; letter-spacing: -.015em; }
   h2 { font-size: 1.4rem; line-height: 1.45; }
   h3 { font-size: 1.1rem; line-height: 1.5; }
-  h4 { font-size: 1rem; }
-  p + p, p + ul, p + ol { margin-top: 8px; }
-  ul, ol { padding-left: 1.4em; }
+  h4 { font-size: 1rem; line-height: 1.5; }
+  p + p, p + ul, p + ol, dl + p, dl + ul, ul + p, ol + p { margin-top: 8px; }
+  ul, ol { padding-left: 1.35em; }
   li + li { margin-top: 6px; }
   a { color: var(--accent); text-underline-offset: 3px; }
   :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
   [hidden] { display: none !important; }
   .muted, .small { color: var(--muted); }
   .small { font-size: .875rem; }
-  .banner { padding: 32px 20px; background: radial-gradient(ellipse at 85% 0, #e0f2f0, transparent 60%), linear-gradient(115deg, #edf3ff, #f3efff 65%, #edf8f5); border-bottom: 1px solid var(--line); }
-  .banner-inner { max-width: 1040px; margin: auto; }
-  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: center; }
-  .eyebrow { margin-bottom: 10px; color: var(--accent); font-size: .875rem; font-weight: 700; letter-spacing: .12em; }
-  .trip-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; color: var(--muted); font-size: .875rem; }
-  .hero-note { padding: 18px 20px; border: 1px solid #d5dfee; border-radius: 16px; background: rgb(255 255 255 / 65%); }
-  .hero-note strong { display: block; margin-bottom: 8px; }
+
+  /* 顶部 Hero 与封面图 */
+  .banner { padding: 28px var(--pad-x); background: radial-gradient(ellipse at 85% 0, var(--hero-glow), transparent 60%), linear-gradient(120deg, var(--hero-a), var(--hero-b) 62%, var(--hero-c)); border-bottom: 1px solid var(--line); }
+  .banner-inner { max-width: var(--container); margin: auto; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: center; }
+  .eyebrow { margin-bottom: 8px; color: var(--accent); font-size: .875rem; font-weight: 700; letter-spacing: .08em; }
+  .trip-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .trip-meta span { padding: 4px 11px; border: 1px solid rgb(19 45 72 / 10%); border-radius: 999px; background: rgb(255 255 255 / 72%); color: var(--ink); font-size: .875rem; line-height: 1.4; }
+  .hero-note { padding: 18px 20px; border: 1px solid rgb(54 84 187 / 14%); border-radius: 16px; background: rgb(255 255 255 / 78%); backdrop-filter: blur(8px); box-shadow: var(--shadow); }
+  .hero-note strong { display: block; margin-bottom: 6px; color: var(--ink); }
   .hero-note p + p { margin-top: 10px; }
-  @media (min-width: 800px) { .banner { padding: 48px 24px; } .hero-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 40px; } }
-  .cover { margin: 20px 0 0; }
-  .cover img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: var(--soft); }
-  .cover figcaption { margin-top: 6px; color: var(--muted); font-size: .875rem; }
-  .skip-link { position: absolute; top: 8px; left: 8px; z-index: 30; padding: 10px; background: white; transform: translateY(-180%); }
+  .cover { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--card); box-shadow: var(--shadow); }
+  .cover img, .spot-photo img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--soft); color: var(--muted); font-size: .875rem; }
+  .cover figcaption { padding: 10px 16px; color: var(--muted); font-size: .875rem; border-top: 1px solid var(--line-soft); }
+  .spot-photo { margin-top: 12px; }
+  .spot-photo img { border-radius: 12px; }
+  .spot-photo figcaption { margin-top: 6px; color: var(--muted); font-size: .875rem; }
+  .skip-link { position: absolute; top: 8px; left: 8px; z-index: 30; padding: 10px 14px; border-radius: 8px; background: var(--card); box-shadow: var(--shadow); font-weight: 600; transform: translateY(-200%); }
   .skip-link:focus { transform: none; }
 
-  /* 导航与响应式布局 */
-  .nav { position: sticky; top: 0; z-index: 20; display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto; background: var(--card); border-bottom: 1px solid var(--line); box-shadow: 0 3px 12px rgb(10 37 64 / 3%); }
+  /* 吸顶导航与响应式骨架 */
+  .nav { position: sticky; top: 0; z-index: 20; display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; background: rgb(255 255 255 / 92%); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); box-shadow: 0 2px 10px rgb(19 45 72 / 4%); }
   .nav::before, .nav::after { content: ""; margin: auto; }
-  .nav a { display: flex; align-items: center; flex: 0 0 auto; min-height: 44px; padding: 8px 14px; border-radius: 24px; text-decoration: none; white-space: nowrap; font-size: .9375rem; }
-  .nav a[aria-current="page"] { background: var(--accent); color: #fff; }
-  .layout { max-width: 1080px; margin: auto; padding: 24px 16px; }
-  [data-page], [id] { scroll-margin-top: 5.5rem; }
-  [data-page] { margin-bottom: 24px; }
-  .page-head { margin-bottom: 20px; }
-  .page-head p { margin-top: 8px; }
-  .card { min-width: 0; padding: 18px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); box-shadow: 0 6px 18px rgb(10 37 64 / 3%); }
-  .card > h3, .card > h4 { margin-bottom: 8px; }
-  .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .nav a { display: flex; align-items: center; flex: 0 0 auto; min-height: 44px; padding: 8px 14px; border-radius: 999px; color: #334860; font-size: .9375rem; font-weight: 600; text-decoration: none; white-space: nowrap; transition: background-color .15s, color .15s; }
+  .nav a:hover { background: var(--soft); color: var(--accent); }
+  .nav a[aria-current="page"] { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgb(54 84 187 / 24%); }
+  .nav a:focus-visible { outline-offset: 2px; }
+  .layout { max-width: calc(var(--container) + var(--pad-x) * 2); margin: auto; padding: 24px var(--pad-x); }
+  [data-page], [id] { scroll-margin-top: 4.75rem; }
+  [data-page] { margin-bottom: 28px; }
+  [data-page] > * + * { margin-top: 16px; }
+  .page-head p { margin-top: 6px; }
+  .card { min-width: 0; padding: var(--card-py) 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); box-shadow: var(--shadow); }
+  .card > h3, .card > h4 { margin-bottom: 10px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .grid > * { min-width: 0; }
-  .grid .card { margin: 0; }
   .full { grid-column: 1 / -1; }
-  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .day-link { display: block; min-height: 44px; padding: 8px 0; font-weight: 650; text-decoration: none; }
-  .day-link:hover { text-decoration: underline; }
-  .note { padding: 12px; margin: 12px 0; border-left: 3px solid var(--accent); border-radius: 4px; background: var(--soft); }
-  .dashboard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
-  .dashboard > div { min-width: 0; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .note { padding: 12px 14px; border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; background: var(--soft); }
+  .note.warn { border-left-color: var(--warn-line); background: var(--warn-bg); }
+  .note.warn strong { color: var(--warn-ink); }
+  .card .note { margin-top: 12px; }
+
+  /* 总览索引、来源列表与 Dashboard */
+  .day-index { list-style: none; padding: 0; }
+  .day-index > li { margin: 0; }
+  .day-index > li + li { border-top: 1px solid var(--line-soft); }
+  .day-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; min-height: 44px; padding: 12px 8px; margin: 0 -8px; border-radius: 10px; color: var(--ink); text-decoration: none; transition: background-color .15s; }
+  .day-link::after { content: "→"; grid-row: 1 / 3; grid-column: 2; color: var(--accent); font-weight: 700; }
+  .day-link:hover { background: var(--soft); }
+  .day-title { font-weight: 700; color: var(--accent); }
+  .source-list { list-style: none; padding: 0; }
+  .source-list > li { margin: 0; padding: 8px 0; font-size: .875rem; color: var(--muted); }
+  .source-list > li + li { border-top: 1px solid var(--line-soft); }
+  .status { display: inline-block; padding: 1px 8px; margin-right: 6px; border-radius: 999px; font-size: .875rem; font-weight: 600; background: #eef2f6; color: #48586a; }
+  .status.ok { background: #e6f6f2; color: #096956; }
+  .status.todo { background: var(--warn-bg); color: var(--warn-ink); }
+  .dashboard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+  .dashboard > div { min-width: 0; padding-bottom: 10px; border-bottom: 1px solid var(--line-soft); }
+  .dashboard > .wide { grid-column: 1 / -1; }
   dt { color: var(--muted); font-size: .875rem; }
   dd { margin: 2px 0 0; font-weight: 600; }
-  @media (min-width: 800px) { .dashboard { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .dashboard dd, .meta > span:first-child { font-variant-numeric: tabular-nums; }
+  .day-end { margin-top: 12px; }
+  .kv { display: grid; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); }
+  .kv dd { font-weight: 400; }
 
-  /* 时间轴与原生折叠 */
-  .timeline { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--line); }
+  /* 时间轴、分类色与原生折叠 */
+  .timeline { list-style: none; padding: 0 0 0 16px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
   .timeline > li { margin: 0; position: relative; }
-  .timeline > li::before { content: ""; position: absolute; top: 23px; left: -20px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+  .timeline > li::before { content: ""; position: absolute; top: calc(var(--card-py) + 7px); left: -22px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+  .timeline > li:has(.tag.scenic)::before { background: #0d8a72; }
+  .timeline > li:has(.tag.food)::before { background: #c9523e; }
+  .timeline > li:has(.tag.culture)::before { background: #6b4db8; }
+  .timeline > li:has(.tag.transit)::before { background: #7b8c9f; }
   .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; font-size: .875rem; }
   .meta > span:first-child { font-weight: 700; color: var(--accent); }
-  .tag { padding: 2px 9px; border-radius: 20px; background: #eef2f6; color: #48586a; }
+  .tag { padding: 2px 9px; border-radius: 999px; background: #eef2f6; color: #48586a; font-weight: 600; }
   .tag.scenic { background: #e6f6f2; color: #096956; }
   .tag.food { background: #fff0ed; color: #9c3a2a; }
   .tag.culture { background: #f1edff; color: #5c419c; }
-  .move { margin-top: 8px; color: var(--muted); font-size: .875rem; }
-  details { margin-top: 12px; border-top: 1px solid var(--line); }
-  summary { min-height: 44px; padding: 10px 4px; cursor: pointer; color: var(--accent); font-weight: 600; }
-  .detail-body { padding: 4px 0 8px; }
-  .detail-body h4 { margin-bottom: 4px; }
-  .foot { max-width: 1080px; padding: 16px; margin: auto; color: var(--muted); font-size: .875rem; }
+  .move { margin: 10px 0; padding: 8px 12px; border-radius: 10px; background: #f3f6fa; color: #3d5064; font-size: .875rem; }
+  .leave { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); color: var(--muted); font-size: .875rem; }
+  details { margin-top: 12px; border-top: 1px solid var(--line-soft); }
+  details + details { margin-top: 0; }
+  summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 10px 8px; margin: 0 -8px; border-radius: 10px; cursor: pointer; list-style: none; color: var(--accent); font-weight: 600; transition: background-color .15s; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: ""; flex: 0 0 auto; width: 8px; height: 8px; margin-right: 4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform .2s; }
+  details[open] > summary::after { transform: rotate(-135deg); }
+  summary:hover { background: var(--soft); }
+  .detail-body { padding: 8px 0 4px; }
+  .detail-body > div { padding-top: 10px; border-top: 1px solid var(--line-soft); }
+  .detail-body > div:first-child { padding-top: 0; border-top: 0; }
+  .detail-body h4 { margin-bottom: 4px; color: var(--accent); font-size: .9375rem; }
+  .detail-body .optional { padding: 12px 14px; border: 1px dashed #c8d4e3; border-radius: 12px; background: #fafbfd; }
+  .detail-body .optional h4 { color: var(--muted); }
+  .pager { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; padding-top: 4px; }
+  .pager a { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink); font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgb(19 45 72 / 4%); transition: border-color .15s, background-color .15s, color .15s; }
+  .pager a:hover { border-color: #bfd0ec; background: var(--soft); color: var(--accent); }
+  .pager .next { margin-left: auto; color: var(--accent); }
+  .foot { max-width: calc(var(--container) + var(--pad-x) * 2); padding: 16px var(--pad-x) 28px; margin: auto; color: var(--muted); font-size: .875rem; }
+
+  /* 桌面响应、减弱动效与打印支持 */
+  @media (min-width: 640px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .detail-body.grid > div:not(.optional):nth-child(2) { padding-top: 0; border-top: 0; }
+  }
+  @media (min-width: 800px) {
+    :root { --pad-x: 24px; --card-py: 22px; }
+    .banner { padding: 44px var(--pad-x); }
+    .hero-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 36px; }
+    .card { padding: var(--card-py) 24px; }
+    .dashboard { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .dashboard > .wide { grid-column: span 2; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+  }
+  @media print {
+    body { background: #fff; }
+    .banner { background: #fff; padding: 16px 0; }
+    .nav, .skip-link, .pager { display: none !important; }
+    [data-page][hidden] { display: block !important; }
+    .card, .cover { box-shadow: none; break-inside: avoid; }
+    a[href^="http"]::after { content: " (" attr(href) ")"; font-size: .875rem; color: var(--muted); word-break: break-all; }
+  }
 </style>
 </head>
 <body>
@@ -111,14 +184,25 @@
 <main id="main" class="layout" tabindex="-1">
   <section id="overview" data-page aria-labelledby="overview-title">
     <header class="page-head"><p class="eyebrow">先看全程</p><h2 id="overview-title" tabindex="-1">行程总览</h2><p>{{整体路线与住宿夜数}}</p></header>
-    <section class="card"><h3>为什么这样安排</h3><p>{{按地理顺序、开放条件与同行偏好说明路线逻辑和取舍}}</p>
-      <!-- 有合适的真实目的地图片时可添加 cover 图文区：HTTPS 地址、替代文字、固定比例及来源说明。 -->
-    </section>
-    <div class="card">
+    <!-- 有已核验的真实目的地封面图时可在此插入 figure.cover，禁止凭记忆拼接链接：
+    <figure class="cover">
+      <img src="https://example.com/photo.jpg" alt="{{目的地画面描述}}" width="1200" height="675" loading="eager" decoding="async" referrerpolicy="no-referrer">
+      <figcaption>{{画面说明与图片来源}}</figcaption>
+    </figure> -->
+    <section class="card"><h3>为什么这样安排</h3><p>{{按地理顺序、开放条件与同行偏好说明路线逻辑和取舍}}</p></section>
+    <div class="note warn"><strong>优先确认：</strong>{{关键预约、截止时间与尚待确认的影响；无待办硬约束则改为普通 .note 或删除}}</div>
+    <!-- 一日游无需多日索引时可删除本卡片，直接通过页底按钮或导航进入 Day 1。 -->
+    <section class="card">
       <h3>每日核心</h3>
-      <a class="day-link" href="#day-1">Day 1 · {{当日主题}}</a>
-      <p class="small">{{核心安排与强度；从最终每日计划提取}}</p>
-    </div>
+      <ol class="day-index">
+        <li>
+          <a class="day-link" href="#day-1">
+            <span class="day-title">Day 1 · {{当日主题}}</span>
+            <span class="small">{{核心安排与强度；从最终每日计划提取}}</span>
+          </a>
+        </li>
+      </ol>
+    </section>
     <div class="grid">
       <section class="card"><h3>往返与衔接</h3><p>{{已确认交通或建议时间窗、站点与首尾安排}}</p></section>
       <section class="card"><h3>费用参考</h3><p>{{总额或范围、口径与主要分项}}</p><p class="small">{{未包含项目与可选费用}}</p></section>
@@ -129,15 +213,21 @@
         <p class="small">{{有意义的备选区域及选择条件；不适用则删除本段}}</p>
       </section>
     </div>
-    <div class="note"><strong>优先确认：</strong>{{关键预约、截止时间与尚待确认的影响}}</div>
     <section id="sources" class="card">
       <h3>信息核验</h3>
-      <p class="small">{{关键结论、来源名称、核验日期与状态；有可靠网址时添加普通链接}}</p>
+      <ul class="source-list">
+        <li><span class="status ok">已核验 · {{核验日期}}</span>{{关键结论与来源名称；有可靠网址时添加普通链接}}</li>
+        <li><span class="status">估算</span>{{车程、排队或餐饮费用估算依据}}</li>
+        <li><span class="status todo">待确认</span>{{尚未公布或需出发前复核的限制及影响}}</li>
+      </ul>
       <p class="small">来源链接提供核验依据，出发前请复核会影响行程的动态信息。</p>
     </section>
+    <nav class="pager" aria-label="页面切换">
+      <a class="next" href="#day-1">开始 Day 1 →</a>
+    </nav>
   </section>
 
-  <!-- 按实际天数复制本区块，将 day-1 和 day-1-title 改为唯一 ID，同步导航和总览入口。 -->
+  <!-- 按实际天数复制本区块，将 day-1 和 day-1-title 改为唯一 ID，同步导航、总览入口与页底翻页。 -->
   <section id="day-1" data-page aria-labelledby="day-1-title">
     <header class="page-head"><p class="eyebrow">每日安排</p><h2 id="day-1-title" tabindex="-1">Day 1 · {{当日主题}}</h2><p>{{日期与连续游览链}}</p><p class="muted">{{这一天的核心体验及游玩节奏}}</p></header>
     <div class="card">
@@ -145,25 +235,28 @@
         <div><dt>出发 → 结束</dt><dd>{{建议出发时间}} → {{建议结束时间}}</dd></div>
         <div><dt>核心景点</dt><dd>{{排除餐厅和交通节点后的数量}}</dd></div>
         <div><dt>步行与强度</dt><dd>{{步行范围、坡度／台阶及强度}}</dd></div>
-        <div><dt>主要交通</dt><dd>{{方式与门到门总耗时范围}}</dd></div>
         <div><dt>当日花费</dt><dd>{{预算或主要支出及口径}}</dd></div>
-        <div><dt>天气与穿衣</dt><dd>{{预报或季节参考、核验日期与衣着建议}}</dd></div>
+        <div class="wide"><dt>主要交通</dt><dd>{{方式与门到门总耗时范围}}</dd></div>
+        <div class="wide"><dt>天气与穿衣</dt><dd>{{预报或季节参考、核验日期与衣着建议}}</dd></div>
       </dl>
-      <p class="note"><strong>今日提醒：</strong>{{预约、最晚离开等真正影响执行的事项}}</p>
-      <p>{{当晚住宿及衔接；返程日改为取行李与去站点安排}}</p>
+      <p class="note warn"><strong>今日提醒：</strong>{{预约、最晚离开等真正影响执行的事项；无硬性提醒时可删或改用普通 .note}}</p>
+      <p class="day-end"><strong>当晚衔接：</strong>{{当晚住宿及衔接；返程日改为“返程衔接：”及取行李与去站点安排}}</p>
     </div>
 
+    <!-- 标签约定：.tag.scenic 景点／自然；.tag.culture 博物馆／古建／历史街区；.tag.food 正餐／小吃／茶咖；.tag.transit 交通接驳；默认 .tag 住宿／休息／购物。 -->
     <ol class="timeline" aria-label="当日时间轴">
       <!-- 交通、休息和入住节点保持简短，无需景点详情。 -->
       <li><article class="card">
-        <div class="meta"><span>{{出发或到达时间}}</span><span class="tag">交通</span></div>
+        <div class="meta"><span>{{出发或到达时间}}</span><span class="tag transit">交通</span></div>
         <h3>{{站点或接驳节点}}</h3><p>{{出站、取行李、寄存或接车安排与缓冲}}</p>
       </article></li>
       <li><article class="card">
         <div class="meta"><span>{{游览开始—结束}}</span><span class="tag scenic">景点</span></div>
-        <h3>{{核心景点名称}}</h3><p>{{为什么值得去、核心体验与停留时长}}</p>
-        <p class="move">{{前站 → 本站入口：交通方式、步行换乘与总耗时}}</p>
-        <p class="note">{{门票与单位、关键预约／开放限制、核验状态；无关键提醒则删除本段}}</p>
+        <h3>{{核心景点名称}}</h3>
+        <p class="move"><strong>如何到达：</strong>{{前站 → 本站入口：交通方式、步行换乘与门到门总耗时}}</p>
+        <p>{{为什么值得去、核心体验与停留时长}}</p>
+        <!-- 核心景点有可核验实拍图时，可在此加 figure.spot-photo（loading="lazy" decoding="async" referrerpolicy="no-referrer"）。 -->
+        <p class="note warn"><strong>门票与限制：</strong>{{门票与单位、关键预约／开放限制、核验状态；无关键限制则删除本段}}</p>
         <details>
           <summary>展开景点攻略</summary>
           <div class="detail-body grid">
@@ -171,17 +264,18 @@
             <div><h4>看什么、怎么看</h4><p>{{核心看点、值得了解的背景和容易错过的细节}}</p></div>
             <div><h4>到达与取舍</h4><p>{{最佳到达时段及原因、时间不足可跳过的内容}}</p></div>
             <div><h4>实用提醒</h4><p>{{适用的避坑、休息、厕所、寄存与无障碍信息}}</p></div>
-            <!-- 附近项不适用时删除；摄影有需求时在此处添加次级段落。 -->
-            <div class="full"><h4>有余裕再去 · 可选</h4><p>{{真正顺路的地点、插入位置、往返加游览耗时，以及接回主线的方法}}</p></div>
+            <!-- 摄影有明确需求时可在此加 <div><h4>拍照参考</h4><p>...</p></div>；附近项不适用时删除下方 optional 区块。 -->
+            <div class="full optional"><h4>有余裕再去 · 可选</h4><p>{{真正顺路的地点、插入位置、往返加游览耗时，以及接回主线的方法}}</p></div>
           </div>
         </details>
-        <p class="move">{{从哪个出口离开、下一站怎么走及最晚离开时间（适用时）}}</p>
+        <p class="leave"><strong>离场衔接：</strong>{{推荐出口及最晚离开时间（适用时）；去下一站的具体交通写在下一张卡的“如何到达”中}}</p>
       </article></li>
-      <!-- 按时间插入早餐、午餐、晚餐与休息；小吃和夜宵按需追加。 -->
+      <!-- 按时间插入早餐、午餐、晚餐与休息；小吃和夜宵按需追加；文化场馆或历史街区可用 .tag.culture。 -->
       <li><article class="card">
         <div class="meta"><span>{{用餐开始—结束}}</span><span class="tag food">正餐</span></div>
-        <h3>{{餐次与顺路区域或已核验店铺}}</h3><p>{{当地特色、推荐菜、人均区间与口味适配}}</p>
-        <p class="move">{{从上一站前往的方式与耗时；是否需要专程}}</p>
+        <h3>{{餐次与顺路区域或已核验店铺}}</h3>
+        <p class="move"><strong>如何到达：</strong>{{从上一站前往的方式与耗时；是否需要专程}}</p>
+        <p>{{当地特色、推荐菜、人均区间与口味适配}}</p>
         <p>{{按实际人数的点法；排队超过建议上限时的附近替代}}</p>
       </article></li>
     </ol>
@@ -191,54 +285,83 @@
         <p>{{删减／替换动作、耗时变化、接回原路线的位置与最晚截止}}</p>
       </div></details>
     </section>
+    <nav class="pager" aria-label="页面切换">
+      <a href="#overview">← 返回总览</a>
+      <a class="next" href="#souvenirs">特产 →</a>
+    </nav>
   </section>
 
-  <!-- 无合适特产时删除整页及导航；卡片按有价值的推荐数量增减。 -->
+  <!-- 无合适特产时删除整页、导航及页底对应链接；卡片按有价值的推荐数量增减。 -->
   <section id="souvenirs" data-page aria-labelledby="souvenirs-title">
-    <header class="page-head"><h2 id="souvenirs-title" tabindex="-1">伴手礼与特产</h2><p>{{顺路采购时机与适用携带提醒}}</p></header>
-    <article class="card">
-      <h3>{{商品名称}}</h3><p>{{价格范围与计价单位}}</p>
-      <p><strong>在哪里买：</strong>{{可找到的区域或已核验店铺}}</p>
-      <p><strong>为什么选这里：</strong>{{品质、价格或便利性的具体理由}}</p>
-      <p><strong>何时买：</strong>{{与每日路线及返程的衔接}}</p>
-      <p class="small">{{便携／易碎／冷藏等条件及有依据的溢价、踩坑或不建议购买项}}</p>
-    </article>
+    <header class="page-head"><p class="eyebrow">顺路带点什么</p><h2 id="souvenirs-title" tabindex="-1">伴手礼与特产</h2><p>{{顺路采购时机与适用携带提醒}}</p></header>
+    <div class="grid">
+      <article class="card">
+        <div class="meta"><span>{{价格范围与计价单位}}</span><span class="tag">特产</span></div>
+        <h3>{{商品名称}}</h3>
+        <dl class="kv">
+          <div><dt>在哪里买</dt><dd>{{可找到的区域或已核验店铺}}</dd></div>
+          <div><dt>为什么选这里</dt><dd>{{品质、价格或便利性的具体理由}}</dd></div>
+          <div><dt>何时买</dt><dd>{{与每日路线及返程的衔接}}</dd></div>
+        </dl>
+        <p class="small">{{便携／易碎／冷藏等条件及有依据的溢价、踩坑或不建议购买项}}</p>
+      </article>
+    </div>
+    <nav class="pager" aria-label="页面切换">
+      <a href="#day-1">← 返回 Day 1</a>
+      <a class="next" href="#prep">准备清单 →</a>
+    </nav>
   </section>
 
   <section id="prep" data-page aria-labelledby="prep-title">
-    <header class="page-head"><h2 id="prep-title" tabindex="-1">出发前准备</h2><p>{{最重要的截止事项}}</p></header>
+    <header class="page-head"><p class="eyebrow">出发前核对</p><h2 id="prep-title" tabindex="-1">出发前准备</h2><p>{{最重要的截止事项}}</p></header>
     <div class="grid">
       <section class="card"><h3>预订与证件</h3><ul><li>{{预订／确认行动及适用时间}}</li><li>{{所需证件}}</li></ul></section>
       <section class="card"><h3>装备与行李</h3><ul><li>{{与天气和体力匹配的准备}}</li><li>{{寄存、过夜物品和取回安排}}</li></ul></section>
       <section class="card full"><h3>出发前复核</h3><ul><li>{{需再次确认的交通、开放或天气条件及替代动作}}</li></ul></section>
     </div>
+    <nav class="pager" aria-label="页面切换">
+      <a href="#overview">← 返回总览</a>
+    </nav>
   </section>
 </main>
 <footer class="foot">旅行攻略 · {{攻略整理日期}} · 动态信息以标注的核验时间为准</footer>
 <script>
-/* 仅增强导航；原生锚点和折叠在无脚本时仍可用，不重建或拼接正文。 */
+/* 仅增强导航与打印；原生锚点和折叠在无脚本时仍可用，不重建或拼接正文。 */
 (() => {
+  const nav = document.querySelector(".nav");
   const pages = [...document.querySelectorAll("[data-page]")];
   const links = [...document.querySelectorAll(".nav a")];
   if (!pages.length) return;
+  let currentPage = pages[0];
+
+  function scrollNavLink(link) {
+    if (!nav || !link) return;
+    const left = link.offsetLeft - (nav.clientWidth - link.offsetWidth) / 2;
+    nav.scrollTo({ left: Math.max(0, left), behavior: "auto" });
+  }
 
   function showPage(moveFocus) {
     try {
       let id = "";
       try { id = decodeURIComponent(location.hash.slice(1)); } catch { /* 无效编码退回总览。 */ }
-      const target = document.getElementById(id);
-      const page = (target && target.closest("[data-page]")) || pages[0];
+      const target = id ? document.getElementById(id) : null;
+      const page = id === "main" ? currentPage : ((target && target.closest("[data-page]")) || pages[0]);
+      currentPage = page;
       pages.forEach(item => { item.hidden = item !== page; });
       links.forEach(link => {
         if (link.hash === "#" + page.id) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
       });
       if (moveFocus) {
-        const heading = document.getElementById(page.getAttribute("aria-labelledby"));
-        if (heading) heading.focus({ preventScroll: true });
         const current = links.find(link => link.hash === "#" + page.id);
-        if (current) current.scrollIntoView({ block: "nearest", inline: "center" });
-        (target && page.contains(target) ? target : page).scrollIntoView({ block: "start" });
+        scrollNavLink(current);
+        const inPageTarget = target && target !== page && page.contains(target);
+        const focusEl = inPageTarget ? target : document.getElementById(page.getAttribute("aria-labelledby"));
+        if (focusEl) {
+          if (!focusEl.hasAttribute("tabindex")) focusEl.setAttribute("tabindex", "-1");
+          focusEl.focus({ preventScroll: true });
+        }
+        (inPageTarget ? target : page).scrollIntoView({ block: "start" });
       }
     } catch {
       /* 增强异常时恢复完整正文，避免某日永久不可见。 */
@@ -246,6 +369,22 @@
       links.forEach(link => link.removeAttribute("aria-current"));
     }
   }
+
+  /* 点击当前已激活导航项时回到该页顶部。 */
+  links.forEach(link => link.addEventListener("click", () => {
+    if (location.hash === link.hash) showPage(true);
+  }));
+
+  /* 打印前展开折叠内容，打印后恢复原状态。 */
+  let closedBeforePrint = [];
+  window.addEventListener("beforeprint", () => {
+    closedBeforePrint = [...document.querySelectorAll("details:not([open])")];
+    closedBeforePrint.forEach(item => { item.open = true; });
+  });
+  window.addEventListener("afterprint", () => {
+    closedBeforePrint.forEach(item => { item.open = false; });
+    closedBeforePrint = [];
+  });
 
   window.addEventListener("hashchange", () => showPage(true));
   showPage(Boolean(location.hash));

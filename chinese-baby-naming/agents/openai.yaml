@@ -1,0 +1,4 @@
+interface:
+  display_name: "中文宝宝取名"
+  short_description: "结合完整姓名音形义、文化出处与日常使用风险，推荐、比较并优化中文宝宝姓名"
+  default_prompt: "使用 $chinese-baby-naming，结合我的姓氏和偏好推荐中文宝宝姓名，并说明各自优缺点及待核实事项。"
